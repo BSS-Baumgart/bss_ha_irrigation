@@ -7,8 +7,8 @@ class Settings(BaseSettings):
     ha_token: str = os.getenv("HA_TOKEN", "")
     log_level: str = os.getenv("LOG_LEVEL", "info")
     default_language: str = os.getenv("DEFAULT_LANGUAGE", "en")
-    data_dir: str = os.getenv("DATA_DIR", "/data")
-    static_dir: str = os.getenv("STATIC_DIR", "/app/frontend/dist")
+    data_dir: str = os.getenv("DATA_DIR", "./data")
+    static_dir: str = os.getenv("STATIC_DIR", "./frontend/dist")
     db_path: str = ""
 
     def model_post_init(self, __context) -> None:
