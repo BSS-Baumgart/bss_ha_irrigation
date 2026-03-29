@@ -16,7 +16,7 @@ from fastapi.responses import FileResponse
 
 from backend.config import settings
 from backend.database.db import init_db
-from backend.services import ha_client, irrigation, scheduler as sched
+from backend.services import ha_client, irrigation, scheduler as sched, ha_publisher
 from backend.routers import (
     zones, valves, sensors, schedules,
     irrigation as irr_router, history, ha_entities, weather as weather_router,
@@ -69,11 +69,16 @@ async def lifespan(app: FastAPI):
     logger.info("Starting scheduler...")
     sched.start()
 
+    if settings.ha_token:
+        logger.info("Starting HA entity publisher...")
+        ha_publisher.start()
+
     logger.info("Irrigation BSS ready on :8099")
     yield
 
     # Shutdown
     logger.info("Shutting down...")
+    ha_publisher.stop()
     sched.stop()
     await irrigation.stop_all()
 
