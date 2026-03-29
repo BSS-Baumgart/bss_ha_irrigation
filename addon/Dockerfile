@@ -28,9 +28,9 @@ RUN mkdir -p /app/frontend && cp -r /build/frontend/dist /app/frontend/dist
 COPY backend /app/backend
 
 # ── Startup ───────────────────────────────────────────────────────────────────
-COPY run.sh /run.sh
-RUN chmod +x /run.sh
+RUN mkdir -p /etc/services.d/irrigation_bss
+COPY run.sh /etc/services.d/irrigation_bss/run
+RUN chmod a+x /etc/services.d/irrigation_bss/run
 
 WORKDIR /app
 EXPOSE 8099
-CMD ["/run.sh"]
