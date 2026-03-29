@@ -22,14 +22,10 @@ map:
   - share:rw
 
 options:
-  ha_url: "http://homeassistant:8123"
-  ha_token: ""
   log_level: "info"
   language: "en"
 
 schema:
-  ha_url: str
-  ha_token: str
   log_level: list(debug|info|warning|error)
   language: list(pl|en|de)
 

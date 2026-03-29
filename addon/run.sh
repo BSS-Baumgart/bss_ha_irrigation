@@ -2,15 +2,15 @@
 
 bashio::log.info "Starting Irrigation BSS..."
 
-# Read config from HA options
-export HA_URL=$(bashio::config 'ha_url')
-export HA_TOKEN=$(bashio::config 'ha_token')
+# Supervisor provides token and HA URL automatically
+export HA_URL="http://supervisor/core"
+export HA_TOKEN="${SUPERVISOR_TOKEN}"
 export LOG_LEVEL=$(bashio::config 'log_level')
 export DEFAULT_LANGUAGE=$(bashio::config 'language')
 export DATA_DIR="/data"
 export STATIC_DIR="/app/frontend/dist"
 
-bashio::log.info "Connecting to Home Assistant at ${HA_URL}"
+bashio::log.info "Using Supervisor token for HA API"
 
 # Init database directory
 mkdir -p "${DATA_DIR}"
