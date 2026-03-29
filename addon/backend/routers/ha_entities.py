@@ -2,7 +2,8 @@
 Endpoint to browse HA entities — used by frontend entity pickers.
 """
 from typing import List, Optional
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
+from pydantic import BaseModel
 
 from backend.services import ha_client
 
@@ -78,3 +79,19 @@ async def get_weather_entities():
         for s in states
         if s["entity_id"].split(".")[0] in WEATHER_DOMAINS
     ]
+
+
+class ServiceCallRequest(BaseModel):
+    entity_id: str
+    service: str  # "turn_on" | "turn_off" | "toggle"
+
+
+@router.post("/service")
+async def call_ha_service(body: ServiceCallRequest):
+    """Direct HA service call — used by valve manual toggle in UI."""
+    allowed = {"turn_on", "turn_off", "toggle"}
+    if body.service not in allowed:
+        raise HTTPException(400, f"Service must be one of: {allowed}")
+    domain = body.entity_id.split(".")[0]
+    await ha_client.call_service(domain, body.service, {"entity_id": body.entity_id})
+    return {"ok": True, "entity_id": body.entity_id, "service": body.service}
