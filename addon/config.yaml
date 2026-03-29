@@ -35,4 +35,6 @@ schema:
   log_level: list(debug|info|warning|error)
   language: list(pl|en|de)
 
-image: "ghcr.io/bss-baumgart/bss_ha_irrigation_{arch}"
+# image: "ghcr.io/bss-baumgart/bss_ha_irrigation_{arch}"
+# Uncomment above when GitHub Actions CI/CD is configured (Stage 3)
+# Without it, HA Supervisor builds from Dockerfile in this repo
