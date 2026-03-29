@@ -1,0 +1,83 @@
+import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import {
+  LayoutDashboard, Layers, Zap, Radio, CalendarDays,
+  Cloud, History, Settings, Droplets,
+} from 'lucide-react'
+import clsx from 'clsx'
+
+const navItems = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'nav.dashboard' },
+  { to: '/zones',     icon: Layers,          label: 'nav.zones' },
+  { to: '/valves',    icon: Zap,             label: 'nav.valves' },
+  { to: '/sensors',   icon: Radio,           label: 'nav.sensors' },
+  { to: '/schedule',  icon: CalendarDays,    label: 'nav.schedule' },
+  { to: '/weather',   icon: Cloud,           label: 'nav.weather' },
+  { to: '/history',   icon: History,         label: 'nav.history' },
+]
+
+const LANGS = [
+  { code: 'pl', label: 'PL' },
+  { code: 'en', label: 'EN' },
+  { code: 'de', label: 'DE' },
+]
+
+export default function Sidebar() {
+  const { t, i18n } = useTranslation()
+
+  const changeLang = (code: string) => {
+    i18n.changeLanguage(code)
+    localStorage.setItem('irrigation-lang', code)
+  }
+
+  return (
+    <aside className="w-56 flex flex-col bg-gray-900 border-r border-gray-800 shrink-0">
+      {/* Logo */}
+      <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-800">
+        <Droplets className="text-primary-500" size={22} />
+        <span className="font-bold text-white text-sm">Irrigation BSS</span>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+        {navItems.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) =>
+              clsx(
+                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                isActive
+                  ? 'bg-primary-900 text-primary-400 font-medium'
+                  : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+              )
+            }
+          >
+            <Icon size={16} />
+            {t(label)}
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Language switcher */}
+      <div className="px-4 py-3 border-t border-gray-800">
+        <div className="flex gap-1">
+          {LANGS.map(({ code, label }) => (
+            <button
+              key={code}
+              onClick={() => changeLang(code)}
+              className={clsx(
+                'flex-1 text-xs py-1 rounded font-medium transition-colors',
+                i18n.language === code
+                  ? 'bg-primary-700 text-white'
+                  : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </aside>
+  )
+}

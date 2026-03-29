@@ -1,0 +1,12 @@
+{
+  "name": "BSS Irrigation",
+  "url": "https://github.com/BSS-Baumgart/bss_ha_irrigation",
+  "maintainer": "BSS-Baumgart <github@bss-baumgart.de>",
+  "addons": [
+    {
+      "name": "Irrigation BSS",
+      "slug": "irrigation_bss",
+      "description": "Advanced irrigation management with zones, valves, sensors and scheduler"
+    }
+  ]
+}
