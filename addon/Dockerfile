@@ -22,7 +22,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # ── Copy artifacts ────────────────────────────────────────────────────────────
-RUN cp -r /build/frontend/dist /app/frontend/dist
+RUN mkdir -p /app/frontend && cp -r /build/frontend/dist /app/frontend/dist
 
 # ── Backend source ────────────────────────────────────────────────────────────
 COPY backend /app/backend
