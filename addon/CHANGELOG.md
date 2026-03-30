@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.4
+
+- Added CI validation workflow for frontend build on pull requests (develop and master).
+- Updated project documentation for Home Assistant users and release workflow clarity.
+- Added UI screenshots to repository documentation.
+
 ## 1.3.3
 
 - Added dashboard quick actions: select section and start watering with custom duration.
