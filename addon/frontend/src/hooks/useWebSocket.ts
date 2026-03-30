@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useIrrigationStore } from '../store/irrigationStore'
+import { INGRESS_BASE } from '../main'
 
 export function useWebSocket() {
   const ws = useRef<WebSocket | null>(null)
@@ -7,7 +8,7 @@ export function useWebSocket() {
 
   useEffect(() => {
     const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
-    const url = `${proto}://${window.location.host}/ws`
+    const url = `${proto}://${window.location.host}${INGRESS_BASE}/ws`
 
     const connect = () => {
       ws.current = new WebSocket(url)

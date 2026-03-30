@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { INGRESS_BASE } from '../main'
 
 const client = axios.create({
-  baseURL: '',
+  baseURL: INGRESS_BASE,
   timeout: 10000,
 })
 
