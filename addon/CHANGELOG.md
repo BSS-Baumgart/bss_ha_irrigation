@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.3
+
+- Added dashboard quick actions: select section and start watering with custom duration.
+- Added start modal on dashboard section cards to set watering time before manual start.
+- Minor dashboard UX cleanup for active watering remaining time label.
+
 ## 1.3.2
 
 - Improved sensors UI: current values are now user-friendly with translated states and units.

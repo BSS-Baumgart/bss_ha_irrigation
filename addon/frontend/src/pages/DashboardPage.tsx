@@ -8,6 +8,7 @@ import { schedulesApi } from '../api/schedules'
 import { irrigationApi } from '../api/irrigation'
 import type { Zone, Sensor, Schedule } from '../types'
 import StatusBadge from '../components/common/StatusBadge'
+import Modal from '../components/common/Modal'
 import { useNavigate } from 'react-router-dom'
 
 function formatTime(sec: number) {
@@ -34,6 +35,10 @@ export default function DashboardPage() {
   const [sensors, setSensors] = useState<Sensor[]>([])
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [startingZone, setStartingZone] = useState<number | null>(null)
+  const [quickZoneId, setQuickZoneId] = useState<number | ''>('')
+  const [quickDuration, setQuickDuration] = useState<number>(15)
+  const [startModalZone, setStartModalZone] = useState<Zone | null>(null)
+  const [startModalDuration, setStartModalDuration] = useState<number>(15)
 
   useEffect(() => {
     zonesApi.list().then(setZones).catch(() => {})
@@ -43,6 +48,20 @@ export default function DashboardPage() {
 
   const blockingSensors = sensors.filter(s => s.is_blocking && s.enabled)
   const totalValves = zones.reduce((a, z) => a + z.valve_count, 0)
+  const activeZoneIds = new Set(activeZones.map(z => z.zone_id))
+  const availableStartZones = zones.filter(z => z.enabled && z.valve_count > 0 && !activeZoneIds.has(z.id))
+
+  useEffect(() => {
+    if (availableStartZones.length === 0) {
+      setQuickZoneId('')
+      return
+    }
+    const hasSelected = quickZoneId !== '' && availableStartZones.some(z => z.id === quickZoneId)
+    if (!hasSelected) {
+      setQuickZoneId(availableStartZones[0].id)
+      setQuickDuration(availableStartZones[0].duration_min)
+    }
+  }, [availableStartZones, quickZoneId])
 
   const nextRunForZone = (zoneId: number): string | null => {
     const zoneSchedules = schedules.filter(s => s.zone_id === zoneId && s.enabled && s.next_run)
@@ -53,12 +72,30 @@ export default function DashboardPage() {
     return formatNextRun(sorted[0].next_run)
   }
 
-  const handleStart = async (zone: Zone) => {
-    setStartingZone(zone.id)
+  const startZoneWithDuration = async (zoneId: number, durationMin: number, closeModal = false) => {
+    setStartingZone(zoneId)
     try {
-      await irrigationApi.start(zone.id)
+      await irrigationApi.start(zoneId, durationMin)
     } catch {}
-    finally { setStartingZone(null) }
+    finally {
+      setStartingZone(null)
+      if (closeModal) setStartModalZone(null)
+    }
+  }
+
+  const handleQuickStart = async () => {
+    if (quickZoneId === '') return
+    await startZoneWithDuration(quickZoneId, quickDuration)
+  }
+
+  const openStartModal = (zone: Zone) => {
+    setStartModalZone(zone)
+    setStartModalDuration(zone.duration_min)
+  }
+
+  const handleStartFromModal = async () => {
+    if (!startModalZone) return
+    await startZoneWithDuration(startModalZone.id, startModalDuration, true)
   }
 
   const handleStop = async (zoneId: number) => {
@@ -108,6 +145,47 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {availableStartZones.length > 0 && (
+        <div className="card">
+          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('dashboard.quickStart')}</div>
+          <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_180px_auto] gap-2">
+            <select
+              className="input"
+              value={quickZoneId}
+              onChange={(e) => {
+                const id = e.target.value ? Number(e.target.value) : ''
+                setQuickZoneId(id)
+                if (id !== '') {
+                  const z = availableStartZones.find(zone => zone.id === id)
+                  if (z) setQuickDuration(z.duration_min)
+                }
+              }}
+            >
+              {availableStartZones.map(zone => (
+                <option key={zone.id} value={zone.id}>{zone.name}</option>
+              ))}
+            </select>
+
+            <input
+              className="input"
+              type="number"
+              min={1}
+              max={240}
+              value={quickDuration}
+              onChange={(e) => setQuickDuration(Number(e.target.value))}
+            />
+
+            <button
+              onClick={handleQuickStart}
+              disabled={quickZoneId === '' || startingZone !== null || quickDuration < 1}
+              className="btn-primary btn-sm flex items-center justify-center gap-1.5 disabled:opacity-40"
+            >
+              <Play size={11} />{t('zones.startZone')}
+            </button>
+          </div>
+        </div>
+      )}
+
       {anyWatering && (
         <div className="card border-primary-800">
           <div className="flex items-center gap-3 mb-4">
@@ -123,7 +201,7 @@ export default function DashboardPage() {
               <div key={z.zone_id}>
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm text-gray-900 dark:text-white">{z.zone_name}</span>
-                  <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{formatTime(z.remaining_sec)} left</span>
+                  <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{formatTime(z.remaining_sec)} {t('dashboard.remaining')}</span>
                 </div>
                 <div className="h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
                   <div className="h-full bg-primary-500 transition-all duration-1000 rounded-full"
@@ -184,7 +262,7 @@ export default function DashboardPage() {
                       </button>
                     ) : (
                       <button
-                        onClick={() => handleStart(zone)}
+                        onClick={() => openStartModal(zone)}
                         disabled={!zone.enabled || zone.valve_count === 0 || startingZone === zone.id}
                         className="btn-primary btn-sm flex items-center gap-1.5 disabled:opacity-40">
                         <Play size={11} />{t('zones.startZone')}
@@ -207,6 +285,37 @@ export default function DashboardPage() {
           </button>
         </div>
       )}
+
+      <Modal
+        open={!!startModalZone}
+        title={startModalZone ? `${t('zones.startZone')} - ${startModalZone.name}` : t('zones.startZone')}
+        onClose={() => setStartModalZone(null)}
+        width="sm"
+      >
+        <div className="p-5 space-y-4">
+          <div>
+            <label className="label">{t('zones.duration')}</label>
+            <input
+              className="input"
+              type="number"
+              min={1}
+              max={240}
+              value={startModalDuration}
+              onChange={(e) => setStartModalDuration(Number(e.target.value))}
+            />
+          </div>
+          <div className="flex gap-3 justify-end border-t border-gray-200 dark:border-gray-800 pt-3">
+            <button onClick={() => setStartModalZone(null)} className="btn-secondary btn-sm">{t('common.cancel')}</button>
+            <button
+              onClick={handleStartFromModal}
+              disabled={startModalDuration < 1 || (startModalZone !== null && startingZone === startModalZone.id)}
+              className="btn-primary btn-sm flex items-center gap-1.5 disabled:opacity-40"
+            >
+              <Play size={11} />{t('zones.startZone')}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
