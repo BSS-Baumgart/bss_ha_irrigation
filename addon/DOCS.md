@@ -1,37 +1,67 @@
-# Irrigation BSS — Documentation
+# Irrigation BSS
 
-## Setup
+Advanced irrigation management for Home Assistant. Control your garden watering system with zones, schedules, sensors and weather-based automation — all from the HA sidebar.
 
-1. Install addon from repository
-2. Go to addon **Configuration** tab
-3. Set `ha_token` — create one in HA: Profile → Security → Long-lived access tokens
-4. Optionally set `language` (`pl`, `en`, `de`)
-5. Start the addon — it appears automatically in the HA sidebar
+## Installation
 
-## First steps
+1. Go to **Settings → Add-ons → Add-on Store → ⋮ → Custom repositories**
+2. Add `https://github.com/BSS-Baumgart/bss_ha_irrigation`
+3. Install **Irrigation BSS**
+4. Configure `language` and `log_level` on the **Configuration** tab
+5. Start the addon — it appears in the HA sidebar automatically
 
-1. **Add valves** — Valves page → pick HA switch/input_boolean entities
-2. **Create zones** — Zones page → group valves into watering zones
-3. **Add sensors** (optional) — Sensors page → rain sensor, soil moisture, temperature
-4. **Set schedules** — Schedule page → pick days, time and duration per zone
-5. **Check dashboard** — live status, manual controls, next watering info
+The addon connects to Home Assistant via the Supervisor. No token or URL configuration is required.
 
-## Sensor types
+## Configuration
 
-| Type | HA entity | Effect |
-|---|---|---|
-| Rain | `binary_sensor` | Skip watering when `on` |
-| Soil moisture | `sensor` | Skip zone when above threshold (%) |
-| Flow meter | `sensor` | Monitor water usage |
-| Temperature | `sensor` | Freeze protection below 2°C |
-| Weather | `weather` | Forecast-based skip |
+| Option | Values | Default | Description |
+|--------|--------|---------|-------------|
+| `log_level` | debug / info / warning / error | info | Backend log verbosity |
+| `language` | pl / en / de | en | Default UI language on fresh install |
+
+The language can also be changed at any time using the switcher in the UI sidebar.
+
+## Getting started
+
+### 1. Add valves
+Go to **Valves** and add the HA entities that control your solenoid valves (switches or input_boolean). The name is filled in automatically from HA.
+
+### 2. Create zones
+Go to **Zones** and create a zone for each area you want to water independently. Assign one or more valves to each zone.
+
+### 3. Add sensors (optional)
+Go to **Sensors** to add:
+- **Rain sensor** — skips watering when active
+- **Soil moisture** — skips when soil is wet above a threshold
+- **Temperature** — frost protection (skips below 2 °C by default)
+- **Flow meter** — monitors water usage
+- **Weather** — forecast-based skip via HA weather entity
+
+### 4. Set a schedule
+Go to **Schedule** and create a schedule for each zone — choose days of the week, start time, duration and watering mode (sequential or parallel).
+
+### 5. Dashboard
+The dashboard shows live zone status, countdown timers, blocking sensor alerts and a quick-start grid for manual watering.
 
 ## Watering modes
 
-- **Sequential** — one zone at a time (safe for low water pressure)
-- **Parallel** — all zones simultaneously
+- **Sequential** — zones water one at a time. Recommended for systems with limited water pressure.
+- **Parallel** — all zones in a schedule water simultaneously.
+
+## Virtual entities
+
+The addon publishes its state back to Home Assistant as entities you can use in dashboards and automations:
+
+- `binary_sensor.irrigation_bss_watering` — any zone active
+- `sensor.irrigation_bss_active_zone` — active zone name
+- `sensor.irrigation_bss_remaining_sec` — remaining seconds
+- `sensor.irrigation_bss_next_watering` — next scheduled run
+- `binary_sensor.irrigation_bss_rain_blocked` — rain sensor blocking
+- `binary_sensor.irrigation_bss_frost_blocked` — frost protection active
+- `binary_sensor.irrigation_bss_zone_{id}` — per-zone state
 
 ## Languages
 
-UI is available in **Polish**, **English** and **German**.
-Community translations can be added by contributing `frontend/public/locales/{lang}/translation.json`.
+The UI is available in **Polish**, **English** and **German**. The language set in addon configuration is the default on first launch. Users can switch language at any time from the sidebar without restarting the addon.
+
+To contribute a translation, add `frontend/public/locales/{lang}/translation.json` based on the English template.

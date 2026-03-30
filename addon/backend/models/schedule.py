@@ -10,7 +10,6 @@ class WateringMode(str, Enum):
 
 class ScheduleBase(SQLModel):
     zone_id: int = Field(foreign_key="zones.id")
-    # Weekdays as bitmask: bit0=Mon, bit1=Tue, ... bit6=Sun
     weekdays: int = Field(default=0b1111111, ge=0, le=127)
     start_time: str = Field(max_length=5)     # "HH:MM"
     duration_override_min: Optional[int] = Field(default=None, ge=1, le=240)

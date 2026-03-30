@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard, Layers, Zap, Radio, CalendarDays,
-  Cloud, History, Droplets, Sun, Moon,
+  Cloud, History, Sun, Moon,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useIrrigationStore } from '../../store/irrigationStore'
@@ -29,7 +29,6 @@ export default function Sidebar() {
 
   const changeLang = (code: string) => {
     i18n.changeLanguage(code)
-    // Mark as user-overridden so AppLayout won't reset it from backend config
     localStorage.setItem('irrigation-lang-override', code)
   }
 
@@ -37,7 +36,7 @@ export default function Sidebar() {
     <aside className="w-56 flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-200 dark:border-gray-800">
-        <Droplets className="text-primary-500" size={22} />
+        <img src="icon.png" alt="Irrigation BSS" className="w-6 h-6 rounded" />
         <span className="font-bold text-gray-900 dark:text-white text-sm">Irrigation BSS</span>
       </div>
 

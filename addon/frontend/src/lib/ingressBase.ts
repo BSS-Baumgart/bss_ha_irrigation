@@ -1,8 +1,3 @@
-/**
- * Detect the HA Ingress base path from the current URL.
- * When running through HA Ingress: /api/hassio_ingress/{token}
- * When running locally (dev): ''
- */
 function detectIngressBase(): string {
   const parts = window.location.pathname.split('/')
   const idx = parts.indexOf('hassio_ingress')

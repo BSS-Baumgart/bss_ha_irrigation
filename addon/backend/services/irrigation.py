@@ -1,6 +1,3 @@
-"""
-Core irrigation logic — start/stop zones, check sensors, manage active state.
-"""
 import asyncio
 import logging
 from datetime import datetime, timezone
@@ -15,9 +12,8 @@ from backend.services import ha_client
 
 logger = logging.getLogger(__name__)
 
-# Active watering sessions: zone_id -> {"task": asyncio.Task, "started_at": datetime, "duration_min": int}
 _active: Dict[int, dict] = {}
-_ws_broadcast: Optional[callable] = None   # injected by main.py
+_ws_broadcast: Optional[callable] = None
 
 
 def set_ws_broadcast(fn):
@@ -50,9 +46,6 @@ def get_active_zones() -> List[dict]:
 
 
 async def check_sensors_blocking(zone_id: Optional[int] = None) -> Optional[SkipReason]:
-    """
-    Check all enabled sensors. Returns a SkipReason if watering should be blocked, else None.
-    """
     with Session(engine) as session:
         sensors = session.exec(select(Sensor).where(Sensor.enabled == True)).all()
 
@@ -88,7 +81,6 @@ async def check_sensors_blocking(zone_id: Optional[int] = None) -> Optional[Skip
 async def start_zone(zone_id: int, duration_min: Optional[int] = None,
                      triggered_by: TriggerSource = TriggerSource.manual,
                      skip_sensor_check: bool = False) -> dict:
-    """Start watering a zone. Returns status dict."""
     with Session(engine) as session:
         zone = session.get(Zone, zone_id)
         if not zone:
@@ -108,7 +100,6 @@ async def start_zone(zone_id: int, duration_min: Optional[int] = None,
         valve_entities = [v.entity_id for v in valves]
         zone_name = zone.name
 
-    # Sensor check
     if not skip_sensor_check:
         skip = await check_sensors_blocking(zone_id)
         if skip:
@@ -118,11 +109,9 @@ async def start_zone(zone_id: int, duration_min: Optional[int] = None,
     if zone_id in _active:
         return {"ok": False, "error": "Zone already watering"}
 
-    # Turn on all valves
     for entity_id in valve_entities:
         await ha_client.turn_on(entity_id)
 
-    # Create log entry
     log_entry = WateringLog(
         zone_id=zone_id,
         zone_name=zone_name,
@@ -136,7 +125,6 @@ async def start_zone(zone_id: int, duration_min: Optional[int] = None,
         session.refresh(log_entry)
         log_id = log_entry.id
 
-    # Schedule auto-stop
     task = asyncio.create_task(
         _auto_stop(zone_id, duration, valve_entities, log_id)
     )
@@ -155,7 +143,6 @@ async def start_zone(zone_id: int, duration_min: Optional[int] = None,
 
 
 async def stop_zone(zone_id: int) -> dict:
-    """Stop watering a specific zone."""
     if zone_id not in _active:
         return {"ok": False, "error": "Zone not watering"}
 
@@ -166,7 +153,6 @@ async def stop_zone(zone_id: int) -> dict:
 
 
 async def stop_all() -> dict:
-    """Emergency stop — turn off all active zones."""
     zone_ids = list(_active.keys())
     for zone_id in zone_ids:
         await stop_zone(zone_id)

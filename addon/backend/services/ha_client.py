@@ -1,7 +1,3 @@
-"""
-Home Assistant WebSocket client.
-Connects to HA WS API, subscribes to state changes and allows calling services.
-"""
 import asyncio
 import json
 import logging
@@ -27,7 +23,6 @@ def _next_id() -> int:
 
 
 async def connect():
-    """Establish WebSocket connection to HA."""
     global _ws, _session
     _session = aiohttp.ClientSession()
     ws_url = settings.ha_url.replace("http", "ws") + "/api/websocket"
@@ -37,7 +32,6 @@ async def connect():
 
 
 async def _receive_loop():
-    """Process incoming messages from HA."""
     global _ws
     async for msg in _ws:
         if msg.type == aiohttp.WSMsgType.TEXT:
@@ -91,7 +85,6 @@ async def _subscribe_states():
 
 
 async def _send(payload: dict) -> dict:
-    """Send message and await result."""
     msg_id = _next_id()
     payload["id"] = msg_id
     loop = asyncio.get_event_loop()
@@ -102,7 +95,6 @@ async def _send(payload: dict) -> dict:
 
 
 async def get_states() -> List[dict]:
-    """Fetch all entity states via REST API."""
     url = f"{settings.ha_url}/api/states"
     headers = {"Authorization": f"Bearer {settings.ha_token}"}
     async with aiohttp.ClientSession() as s:
@@ -114,7 +106,6 @@ async def get_states() -> List[dict]:
 
 
 async def get_state(entity_id: str) -> Optional[dict]:
-    """Get current state of a single entity."""
     if entity_id in _states:
         return _states[entity_id]
     url = f"{settings.ha_url}/api/states/{entity_id}"
@@ -129,7 +120,6 @@ async def get_state(entity_id: str) -> Optional[dict]:
 
 
 async def call_service(domain: str, service: str, data: dict = None) -> dict:
-    """Call a HA service (e.g. switch.turn_on)."""
     return await _send({
         "type": "call_service",
         "domain": domain,

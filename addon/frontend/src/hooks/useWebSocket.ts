@@ -15,7 +15,6 @@ export function useWebSocket() {
 
       ws.current.onopen = () => {
         setWsConnected(true)
-        // Keepalive ping every 30s
         const ping = setInterval(() => {
           if (ws.current?.readyState === WebSocket.OPEN) {
             ws.current.send('ping')
@@ -38,7 +37,7 @@ export function useWebSocket() {
             }
           }
         } catch {
-          // pong or non-JSON
+          // ignore pong / non-JSON
         }
       }
 

@@ -27,11 +27,9 @@ def list_valves(session: Session = Depends(get_session)):
 
 @router.post("", response_model=ValveRead, status_code=201)
 def create_valve(valve_in: ValveCreate, session: Session = Depends(get_session)):
-    # Ensure entity not already registered
     existing = session.exec(select(Valve).where(Valve.entity_id == valve_in.entity_id)).first()
     if existing:
         raise HTTPException(409, f"Entity {valve_in.entity_id} already registered as valve")
-    # Ensure one valve per zone if zone_id given
     if valve_in.zone_id:
         _check_zone_exists(valve_in.zone_id, session)
     valve = Valve.model_validate(valve_in)

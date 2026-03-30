@@ -3,7 +3,6 @@ import { initReactI18next } from 'react-i18next'
 import HttpBackend from 'i18next-http-backend'
 import { INGRESS_BASE } from './lib/ingressBase'
 
-// Language override set by user via UI switcher (takes priority over backend config)
 const userLang = localStorage.getItem('irrigation-lang-override') || 'en'
 
 i18n

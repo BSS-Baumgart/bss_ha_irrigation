@@ -1,10 +1,6 @@
 #!/command/with-contenv bashio
 # shellcheck shell=bash
-# ==============================================================================
-# Start Irrigation BSS backend
-# ==============================================================================
 
-# Read addon options
 LOG_LEVEL=$(bashio::config 'log_level')
 DEFAULT_LANGUAGE=$(bashio::config 'language')
 

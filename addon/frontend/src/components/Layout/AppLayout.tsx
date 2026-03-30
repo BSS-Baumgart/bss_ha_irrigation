@@ -9,12 +9,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const theme = useIrrigationStore(s => s.theme)
   const { i18n } = useTranslation()
 
-  // Apply dark class to <html> element
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
 
-  // Fetch backend-configured language on mount (config wins over default)
   useEffect(() => {
     fetch(`${INGRESS_BASE}/api/config`)
       .then(r => r.json())

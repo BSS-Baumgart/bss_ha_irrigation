@@ -1,7 +1,3 @@
-"""
-Irrigation BSS — FastAPI application entry point.
-Serves REST API, WebSocket for live updates, and static frontend files.
-"""
 import asyncio
 import json
 import logging
@@ -28,12 +24,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# WebSocket connection manager
 _ws_clients: Set[WebSocket] = set()
 
 
 async def broadcast(data: dict):
-    """Send JSON message to all connected WebSocket clients."""
     if not _ws_clients:
         return
     msg = json.dumps(data)
@@ -48,7 +42,6 @@ async def broadcast(data: dict):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     logger.info("Initializing database...")
     init_db()
 
@@ -56,14 +49,12 @@ async def lifespan(app: FastAPI):
     if settings.ha_token:
         try:
             await ha_client.connect()
-            # Pre-load all states
             await ha_client.get_states()
         except Exception as e:
             logger.warning(f"HA connection failed: {e} — running in offline mode")
     else:
         logger.warning("No ha_token configured — HA features disabled")
 
-    # Inject WS broadcast into irrigation service
     irrigation.set_ws_broadcast(broadcast)
 
     logger.info("Starting scheduler...")
@@ -76,7 +67,6 @@ async def lifespan(app: FastAPI):
     logger.info("Irrigation BSS ready on :8099")
     yield
 
-    # Shutdown
     logger.info("Shutting down...")
     ha_publisher.stop()
     sched.stop()
@@ -99,7 +89,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register routers
 app.include_router(zones.router)
 app.include_router(valves.router)
 app.include_router(sensors.router)
@@ -112,17 +101,14 @@ app.include_router(weather_router.router)
 
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
-    """Real-time push updates (valve states, active zones, sensor states)."""
     await ws.accept()
     _ws_clients.add(ws)
     try:
-        # Send initial status on connect
         await ws.send_json({
             "event": "connected",
             "active_zones": irrigation.get_active_zones(),
         })
         while True:
-            # Keep alive — client may send pings
             data = await ws.receive_text()
             if data == "ping":
                 await ws.send_text("pong")
@@ -142,15 +128,17 @@ def get_config():
     return {"language": settings.default_language}
 
 
-# Serve React frontend — must be last
 static_dir = settings.static_dir
 if os.path.isdir(static_dir):
     app.mount("/assets", StaticFiles(directory=f"{static_dir}/assets"), name="assets")
     app.mount("/locales", StaticFiles(directory=f"{static_dir}/locales"), name="locales")
 
+    @app.get("/icon.png", include_in_schema=False)
+    async def serve_icon():
+        return FileResponse(os.path.join(static_dir, "icon.png"))
+
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(full_path: str):
-        index = os.path.join(static_dir, "index.html")
-        return FileResponse(index)
+        return FileResponse(os.path.join(static_dir, "index.html"))
 else:
     logger.warning(f"Frontend static dir not found: {static_dir} — API-only mode")
