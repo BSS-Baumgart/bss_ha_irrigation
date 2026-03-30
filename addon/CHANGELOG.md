@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.2
+
+- Improved sensors UI: current values are now user-friendly with translated states and units.
+- Improved main valve section layout on Valves page for cleaner, more compact appearance.
+- Removed language switcher from sidebar; UI language now follows addon configuration.
+
 ## 1.3.1
 
 - Fixed: resolved backend 500 errors on irrigation status/start/stop endpoints during active watering.

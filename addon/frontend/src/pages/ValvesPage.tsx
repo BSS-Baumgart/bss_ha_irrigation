@@ -132,19 +132,23 @@ function MainValveSection({ t }: { t: (k: string) => string }) {
   }
 
   return (
-    <div className="card border-primary-800/50">
-      <div className="flex items-center gap-2 mb-3">
-        <ShieldCheck size={16} className="text-primary-400" />
-        <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('valves.mainValve')}</span>
-      </div>
-      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('valves.mainValveDesc')}</p>
-      <div className="flex gap-2">
-        <div className="flex-1">
-          <EntityPicker value={entity} onChange={setEntity} type="valves" />
+    <div className="card border-primary-700/40 max-w-4xl">
+      <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <ShieldCheck size={16} className="text-primary-400" />
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('valves.mainValve')}</span>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('valves.mainValveDesc')}</p>
         </div>
-        <button onClick={save} className="btn-primary btn-sm shrink-0">
-          {saved ? '✓' : t('common.save')}
-        </button>
+        <div className="flex gap-2 w-full lg:w-[460px]">
+          <div className="flex-1">
+            <EntityPicker value={entity} onChange={setEntity} type="valves" />
+          </div>
+          <button onClick={save} className="btn-primary btn-sm shrink-0 min-w-[88px]">
+            {saved ? 'OK' : t('common.save')}
+          </button>
+        </div>
       </div>
     </div>
   )

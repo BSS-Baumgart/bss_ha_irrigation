@@ -16,10 +16,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }, [theme])
 
   useEffect(() => {
+    localStorage.removeItem('irrigation-lang-override')
     fetch(`${INGRESS_BASE}/api/config`)
       .then(r => r.json())
       .then(cfg => {
-        if (cfg.language && !localStorage.getItem('irrigation-lang-override')) {
+        if (cfg.language) {
           i18n.changeLanguage(cfg.language)
         }
       })

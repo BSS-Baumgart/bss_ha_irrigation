@@ -14,6 +14,46 @@ const TYPE_ENTITY_MAP: Record<SensorType, 'sensors' | 'weather'> = {
   rain: 'sensors', soil: 'sensors', flow: 'sensors', temperature: 'sensors', weather: 'weather',
 }
 
+function formatSensorValue(sensor: Sensor, t: (k: string) => string) {
+  const raw = String(sensor.ha_state ?? '').trim()
+  if (!raw) return '—'
+
+  const normalized = raw.toLowerCase()
+
+  if (normalized === 'unknown' || normalized === 'unavailable' || normalized === 'none') {
+    return t('common.unavailable')
+  }
+
+  if (sensor.sensor_type === 'weather') {
+    const key = `weather.conditions.${normalized}`
+    const translated = t(key)
+    return translated === key ? raw : translated
+  }
+
+  if (normalized === 'on') return t('common.on')
+  if (normalized === 'off') return t('common.off')
+
+  const numeric = Number(raw.replace(',', '.'))
+  if (!Number.isNaN(numeric)) {
+    const nf1 = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 })
+    const nf2 = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 })
+    if (sensor.sensor_type === 'temperature') return `${nf1.format(numeric)} °C`
+    if (sensor.sensor_type === 'soil') return `${nf1.format(numeric)} %`
+    if (sensor.sensor_type === 'flow') return nf2.format(numeric)
+    return nf2.format(numeric)
+  }
+
+  return raw
+}
+
+function formatThreshold(sensor: Sensor) {
+  if (sensor.threshold === undefined || sensor.threshold === null) return null
+  const nf = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 })
+  if (sensor.sensor_type === 'temperature') return `${nf.format(sensor.threshold)} °C`
+  if (sensor.sensor_type === 'soil') return `${nf.format(sensor.threshold)} %`
+  return nf.format(sensor.threshold)
+}
+
 function SensorForm({ initial, onSave, onCancel }: {
   initial?: Partial<Sensor>
   onSave: (data: Partial<Sensor>) => Promise<void>
@@ -149,11 +189,11 @@ export default function SensorsPage() {
                 </div>
               </div>
               <div className="flex items-center justify-between mt-3">
-                <div className="text-sm">
+                <div className="text-sm min-w-0 pr-2">
                   <span className="text-gray-500">{t('sensors.currentValue')}: </span>
-                  <span className="text-gray-900 dark:text-white font-mono">{sensor.ha_state ?? '—'}</span>
-                  {sensor.threshold !== undefined && sensor.threshold !== null && (
-                    <span className="text-gray-600 ml-1">/ {sensor.threshold}</span>
+                  <span className="text-gray-900 dark:text-white font-medium break-all">{formatSensorValue(sensor, t)}</span>
+                  {formatThreshold(sensor) && (
+                    <div className="text-xs text-gray-500 mt-1">{t('sensors.threshold')}: {formatThreshold(sensor)}</div>
                   )}
                 </div>
                 {sensor.is_blocking

@@ -17,20 +17,9 @@ const navItems = [
   { to: '/history',   icon: History,         label: 'nav.history' },
 ]
 
-const LANGS = [
-  { code: 'pl', label: 'PL' },
-  { code: 'en', label: 'EN' },
-  { code: 'de', label: 'DE' },
-]
-
 export default function Sidebar() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { theme, toggleTheme, closeSidebar } = useIrrigationStore()
-
-  const changeLang = (code: string) => {
-    i18n.changeLanguage(code)
-    localStorage.setItem('irrigation-lang-override', code)
-  }
 
   return (
     <aside className="w-56 h-full flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
@@ -69,25 +58,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Bottom controls */}
-      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800 space-y-2">
-        <div className="flex gap-1">
-          {LANGS.map(({ code, label }) => (
-            <button
-              key={code}
-              onClick={() => changeLang(code)}
-              className={clsx(
-                'flex-1 text-xs py-1 rounded font-medium transition-colors',
-                i18n.language === code
-                  ? 'bg-primary-700 text-white'
-                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
+      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800">
         <button
           onClick={toggleTheme}
           className="w-full flex items-center justify-center gap-2 text-xs py-1.5 rounded font-medium text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
