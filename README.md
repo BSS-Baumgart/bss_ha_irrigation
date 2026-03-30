@@ -2,90 +2,67 @@
 
 Advanced irrigation management addon for Home Assistant.
 
-Ten README jest przygotowany dla uzytkownikow Home Assistant, ktorzy chca szybko zrozumiec co robi addon i jak go dodac.
-
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Addon-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-## Co to jest
+## What It Is
 
-Irrigation BSS pozwala sterowac podlewaniem ogrodu bezposrednio z panelu Home Assistant.
+Irrigation BSS helps you manage garden watering directly from Home Assistant.
 
-Najwazniejsze funkcje:
+Key capabilities:
 
-- Sekcje podlewania z przypisanymi zaworami
-- Harmonogram tygodniowy (tryb sekwencyjny i rownolegly)
-- Szybki start reczny z ustawieniem czasu
-- Czujniki blokujace podlewanie (deszcz, wilgotnosc, temperatura)
-- Integracja z pogoda i publikacja encji do HA
-- Podglad na zywo aktywnej sekcji i czasu pozostalego
+- Watering sections with assigned valves
+- Weekly scheduler (sequential and parallel modes)
+- Manual quick start with custom duration
+- Blocking sensors (rain, soil moisture, temperature)
+- Weather integration
+- Live dashboard with active watering and remaining time
 
-## Instalacja (kanal stabilny)
+## Installation (Stable)
 
-1. W Home Assistant przejdz do Settings -> Add-ons -> Add-on Store.
-2. Otworz menu z trzema kropkami i wybierz Custom repositories.
-3. Dodaj repozytorium: https://github.com/BSS-Baumgart/bss_ha_irrigation
-4. Zainstaluj addon Irrigation BSS.
-5. W zakladce Configuration ustaw language i log_level.
-6. Uruchom addon.
+1. In Home Assistant, go to Settings -> Add-ons -> Add-on Store.
+2. Open the three-dot menu and select Custom repositories.
+3. Add this repository: https://github.com/BSS-Baumgart/bss_ha_irrigation
+4. Install the Irrigation BSS addon.
+5. In Configuration, set language and log_level.
+6. Start the addon.
 
-## Instalacja (kanal testowy develop)
+## Installation (Develop Channel)
 
-Jesli chcesz testowac nowosci przed release dla userow, dodaj repozytorium z branchem develop:
+To test upcoming changes before stable releases, add the develop branch repository:
 
 https://github.com/BSS-Baumgart/bss_ha_irrigation#develop
 
-To jest rekomendowane tylko na osobnej instancji testowej HA.
+Use this on a separate test Home Assistant instance.
 
-## Co zobaczy uzytkownik po instalacji
+## First Setup
 
-- Sidebar panel Irrigation BSS w Home Assistant
-- Widok dashboard z aktywnym podlewaniem i szybkim startem
-- Konfiguracje sekcji, zaworow, czujnikow i harmonogramu
-- Encje publikowane do HA pod automatyzacje
+1. Valves: add HA entities (switch/input_boolean).
+2. Sections: create sections and assign valves.
+3. Sensors (optional): rain, soil moisture, temperature, flow.
+4. Schedule: configure weekdays, start times, and durations.
+5. Dashboard: monitor status and run manual quick actions.
 
-## Pierwsza konfiguracja
+## Entities Published To Home Assistant
 
-1. Zawory: dodaj encje HA (switch/input_boolean).
-2. Sekcje: utworz sekcje i przypisz zawory.
-3. Czujniki (opcjonalnie): deszcz, wilgotnosc, temperatura, przeplyw.
-4. Harmonogram: ustaw dni, godziny i czas.
-5. Dashboard: monitoruj stan i uruchamiaj szybkie akcje reczne.
-
-## Encje publikowane do Home Assistant
-
-| Encja | Typ | Opis |
+| Entity | Type | Description |
 |------|------|------|
-| binary_sensor.irrigation_bss_watering | binary_sensor | Czy jakakolwiek sekcja aktualnie podlewa |
-| sensor.irrigation_bss_active_zone | sensor | Nazwa aktywnej sekcji |
-| sensor.irrigation_bss_remaining_sec | sensor | Pozostaly czas podlewania w sekundach |
-| sensor.irrigation_bss_next_watering | sensor | Najblizsze podlewanie z harmonogramu |
-| binary_sensor.irrigation_bss_rain_blocked | binary_sensor | Blokada przez deszcz |
-| binary_sensor.irrigation_bss_frost_blocked | binary_sensor | Blokada przez temperature/frost |
-| binary_sensor.irrigation_bss_zone_{id} | binary_sensor | Stan konkretnej sekcji |
+| binary_sensor.irrigation_bss_watering | binary_sensor | Any section is currently watering |
+| sensor.irrigation_bss_active_zone | sensor | Name of the active section |
+| sensor.irrigation_bss_remaining_sec | sensor | Remaining watering time in seconds |
+| sensor.irrigation_bss_next_watering | sensor | Next scheduled watering run |
+| binary_sensor.irrigation_bss_rain_blocked | binary_sensor | Watering blocked by rain |
+| binary_sensor.irrigation_bss_frost_blocked | binary_sensor | Watering blocked by frost protection |
+| binary_sensor.irrigation_bss_zone_{id} | binary_sensor | Per-section watering state |
 
-## Workflow wydań
+## Release Flow
 
-- Feature branche tworz z develop.
-- Merge feature -> develop na testy.
-- PR develop -> master tylko pod release.
-- Tag i GitHub Release tworz tylko z master.
+- Create feature branches from develop.
+- Merge features into develop for testing.
+- Open PR develop -> master only for releases.
+- Create tags and GitHub Releases from master.
 
-## Screenshoty UI
-
-Pliki screenshotow wrzucaj do folderu:
-
-docs/screenshots/
-
-Rekomendowane nazwy:
-
-- docs/screenshots/dashboard.png
-- docs/screenshots/sections.png
-- docs/screenshots/valves.png
-- docs/screenshots/sensors.png
-- docs/screenshots/schedule.png
-
-Po dodaniu plikow, obrazki beda widoczne ponizej:
+## UI Preview
 
 ![Dashboard](docs/screenshots/dashboard.png)
 ![Sections](docs/screenshots/sections.png)
