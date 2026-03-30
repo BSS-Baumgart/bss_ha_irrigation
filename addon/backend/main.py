@@ -141,6 +141,7 @@ def health():
 static_dir = settings.static_dir
 if os.path.isdir(static_dir):
     app.mount("/assets", StaticFiles(directory=f"{static_dir}/assets"), name="assets")
+    app.mount("/locales", StaticFiles(directory=f"{static_dir}/locales"), name="locales")
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_spa(full_path: str):
