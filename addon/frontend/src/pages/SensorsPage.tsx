@@ -75,9 +75,9 @@ function SensorForm({ initial, onSave, onCancel }: {
       <div className="flex items-center gap-2">
         <input type="checkbox" id="s-en" checked={!!form.enabled}
           onChange={e => set('enabled', e.target.checked)} className="w-4 h-4 accent-primary-500" />
-        <label htmlFor="s-en" className="text-sm text-gray-300">{t('common.enabled')}</label>
+        <label htmlFor="s-en" className="text-sm text-gray-700 dark:text-gray-300">{t('common.enabled')}</label>
       </div>
-      <div className="flex gap-3 justify-end pt-2 border-t border-gray-800">
+      <div className="flex gap-3 justify-end pt-2 border-t border-gray-200 dark:border-gray-800">
         <button type="button" onClick={onCancel} className="btn-secondary btn-sm">{t('common.cancel')}</button>
         <button type="submit" disabled={saving} className="btn-primary btn-sm">{saving ? '...' : t('common.save')}</button>
       </div>
@@ -114,7 +114,7 @@ export default function SensorsPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">{t('sensors.title')}</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('sensors.title')}</h1>
         <button onClick={() => { setSelected(null); setModal('add') }} className="btn-primary btn-sm flex items-center gap-2">
           <Plus size={15} />{t('sensors.addSensor')}
         </button>
@@ -133,12 +133,12 @@ export default function SensorsPage() {
               <div className="flex items-start justify-between mb-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded">
+                    <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
                       {t(`sensors.types.${sensor.sensor_type}`)}
                     </span>
                     {!sensor.enabled && <StatusBadge variant="gray">{t('common.disabled')}</StatusBadge>}
                   </div>
-                  <div className="font-medium text-white truncate">{sensor.name}</div>
+                  <div className="font-medium text-gray-900 dark:text-white truncate">{sensor.name}</div>
                   <div className="text-xs text-gray-500 truncate mt-0.5">{sensor.entity_id}</div>
                 </div>
                 <div className="flex gap-1 shrink-0 ml-2">
@@ -151,7 +151,7 @@ export default function SensorsPage() {
               <div className="flex items-center justify-between mt-3">
                 <div className="text-sm">
                   <span className="text-gray-500">{t('sensors.currentValue')}: </span>
-                  <span className="text-white font-mono">{sensor.ha_state ?? '—'}</span>
+                  <span className="text-gray-900 dark:text-white font-mono">{sensor.ha_state ?? '—'}</span>
                   {sensor.threshold !== undefined && sensor.threshold !== null && (
                     <span className="text-gray-600 ml-1">/ {sensor.threshold}</span>
                   )}

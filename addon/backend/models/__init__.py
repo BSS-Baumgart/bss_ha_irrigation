@@ -3,6 +3,7 @@ from .valve import Valve, ValveCreate, ValveUpdate, ValveRead
 from .sensor import Sensor, SensorCreate, SensorUpdate, SensorRead, SensorType
 from .schedule import Schedule, ScheduleCreate, ScheduleUpdate, ScheduleRead, WateringMode
 from .history import WateringLog, WateringLogRead, SkipReason, TriggerSource
+from .settings import AppSetting, SettingWrite
 
 __all__ = [
     "Zone", "ZoneCreate", "ZoneUpdate", "ZoneRead",
@@ -10,4 +11,5 @@ __all__ = [
     "Sensor", "SensorCreate", "SensorUpdate", "SensorRead", "SensorType",
     "Schedule", "ScheduleCreate", "ScheduleUpdate", "ScheduleRead", "WateringMode",
     "WateringLog", "WateringLogRead", "SkipReason", "TriggerSource",
+    "AppSetting", "SettingWrite",
 ]

@@ -16,6 +16,7 @@ from backend.services import ha_client, irrigation, scheduler as sched, ha_publi
 from backend.routers import (
     zones, valves, sensors, schedules,
     irrigation as irr_router, history, ha_entities, weather as weather_router,
+    settings as settings_router,
 )
 
 logging.basicConfig(
@@ -97,6 +98,7 @@ app.include_router(irr_router.router)
 app.include_router(history.router)
 app.include_router(ha_entities.router)
 app.include_router(weather_router.router)
+app.include_router(settings_router.router)
 
 
 @app.websocket("/ws")

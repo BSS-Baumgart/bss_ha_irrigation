@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0
+
+- Fixed light mode — all pages now readable (white text on white background resolved)
+- Weather settings (source, lat/lon, HA entity) persist across addon restarts in SQLite
+- New `/api/settings` key-value store in addon database — all settings survive restarts
+- Weather page: auto-saves lat/lon/source as you type (debounced 600 ms)
+- Weather page: loads saved settings on mount before triggering first forecast fetch
+
 ## 1.1.0
 
 - Mobile-responsive UI — sidebar slides in from the left on small screens

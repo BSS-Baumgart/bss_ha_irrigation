@@ -32,7 +32,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-white">{t('dashboard.title')}</h1>
+      <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('dashboard.title')}</h1>
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -48,7 +48,7 @@ export default function DashboardPage() {
               <span className="text-xs text-gray-500">{label}</span>
               <Icon size={16} className={color} />
             </div>
-            <div className="text-2xl font-bold text-white">{value}</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{value}</div>
           </button>
         ))}
       </div>
@@ -82,10 +82,10 @@ export default function DashboardPage() {
             {activeZones.map(z => (
               <div key={z.zone_id}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-white">{z.zone_name}</span>
-                  <span className="text-xs font-mono text-gray-400">{formatTime(z.remaining_sec)} left</span>
+                  <span className="text-sm text-gray-900 dark:text-white">{z.zone_name}</span>
+                  <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{formatTime(z.remaining_sec)} left</span>
                 </div>
-                <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
                   <div className="h-full bg-primary-500 transition-all duration-1000 rounded-full"
                     style={{ width: `${Math.min(100, ((z.duration_min * 60 - z.remaining_sec) / (z.duration_min * 60)) * 100)}%` }} />
                 </div>
@@ -98,7 +98,7 @@ export default function DashboardPage() {
       {/* Quick start */}
       {enabledZones.length > 0 && (
         <div className="card">
-          <p className="text-sm font-medium text-gray-400 mb-3">{t('dashboard.quickStart')}</p>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">{t('dashboard.quickStart')}</p>
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2">
             {enabledZones.map(zone => {
               const isActive = activeZones.some(a => a.zone_id === zone.id)
@@ -108,7 +108,7 @@ export default function DashboardPage() {
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
                     isActive
                       ? 'bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/50'
-                      : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'
+                      : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}>
                   <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: zone.color }} />
                   <span className="truncate">{zone.name}</span>

@@ -70,9 +70,9 @@ function ZoneForm({ initial, onSave, onCancel }: {
       <div className="flex items-center gap-2">
         <input type="checkbox" id="z-en" checked={!!form.enabled}
           onChange={e => set('enabled', e.target.checked)} className="w-4 h-4 accent-primary-500" />
-        <label htmlFor="z-en" className="text-sm text-gray-300">{t('common.enabled')}</label>
+        <label htmlFor="z-en" className="text-sm text-gray-700 dark:text-gray-300">{t('common.enabled')}</label>
       </div>
-      <div className="flex gap-3 justify-end pt-2 border-t border-gray-800">
+      <div className="flex gap-3 justify-end pt-2 border-t border-gray-200 dark:border-gray-800">
         <button type="button" onClick={onCancel} className="btn-secondary btn-sm">{t('common.cancel')}</button>
         <button type="submit" disabled={saving} className="btn-primary btn-sm">{saving ? '...' : t('common.save')}</button>
       </div>
@@ -96,7 +96,7 @@ function StartDialog({ zone, onClose }: { zone: Zone; onClose: () => void }) {
         <input className="input" type="number" min={1} max={240} value={duration}
           onChange={e => setDuration(Number(e.target.value))} />
       </div>
-      <div className="flex gap-3 justify-end border-t border-gray-800 pt-3">
+      <div className="flex gap-3 justify-end border-t border-gray-200 dark:border-gray-800 pt-3">
         <button onClick={onClose} className="btn-secondary btn-sm">{t('common.cancel')}</button>
         <button onClick={start} disabled={loading} className="btn-primary btn-sm flex items-center gap-2">
           <Play size={13} />{loading ? '...' : t('zones.startZone')}
@@ -138,7 +138,7 @@ export default function ZonesPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">{t('zones.title')}</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('zones.title')}</h1>
         <button onClick={() => { setSelected(null); setModal('add') }}
           className="btn-primary btn-sm flex items-center gap-2">
           <Plus size={15} />{t('zones.addZone')}
@@ -159,20 +159,20 @@ export default function ZonesPage() {
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: zone.color }} />
-                  <span className="font-semibold text-white truncate">{zone.name}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white truncate">{zone.name}</span>
                 </div>
                 <div className="flex gap-1 shrink-0 ml-2">
                   <button onClick={() => { setSelected(zone); setModal('edit') }}
-                    className="p-1.5 rounded hover:bg-gray-800 text-gray-500 hover:text-gray-300"><Pencil size={13} /></button>
+                    className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"><Pencil size={13} /></button>
                   <button onClick={() => setDeleteTarget(zone)}
                     className="p-1.5 rounded hover:bg-red-900/40 text-gray-500 hover:text-red-400"><Trash2 size={13} /></button>
                 </div>
               </div>
               {zone.description && <p className="text-xs text-gray-500 mb-3 truncate">{zone.description}</p>}
-              <div className="flex flex-wrap gap-2 text-xs text-gray-400 mb-4">
-                <span className="bg-gray-800 px-2 py-0.5 rounded">{zone.duration_min} min</span>
-                <span className="bg-gray-800 px-2 py-0.5 rounded">#{zone.sequence_order}</span>
-                <span className="bg-gray-800 px-2 py-0.5 rounded">{zone.valve_count} {t('zones.valveCount').toLowerCase()}</span>
+              <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400 mb-4">
+                <span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">{zone.duration_min} min</span>
+                <span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">#{zone.sequence_order}</span>
+                <span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">{zone.valve_count} {t('zones.valveCount').toLowerCase()}</span>
                 {!zone.enabled && <StatusBadge variant="gray">{t('common.disabled')}</StatusBadge>}
               </div>
               <div className="flex items-center justify-between">

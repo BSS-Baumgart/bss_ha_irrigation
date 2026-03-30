@@ -75,7 +75,7 @@ function ScheduleForm({ initial, zones, onSave, onCancel }: {
         <div className="flex gap-1.5 mt-1">
           {DAY_KEYS.map((d, i) => (
             <button key={d} type="button" onClick={() => toggleDay(i)}
-              className={`flex-1 py-1.5 rounded text-xs font-medium transition-colors ${days[i] ? 'bg-primary-600 text-white' : 'bg-gray-800 text-gray-500 hover:bg-gray-700'}`}>
+              className={`flex-1 py-1.5 rounded text-xs font-medium transition-colors ${days[i] ? 'bg-primary-600 text-white' : 'bg-gray-200 dark:bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-600 dark:text-gray-500 hover:bg-gray-300 dark:hover:bg-gray-700'}`}>
               {t(`schedule.days.${d}`)}
             </button>
           ))}
@@ -89,7 +89,7 @@ function ScheduleForm({ initial, zones, onSave, onCancel }: {
           <option value="parallel">{t('schedule.modes.parallel')}</option>
         </select>
       </div>
-      <div className="space-y-2 border border-gray-800 rounded-lg p-3">
+      <div className="space-y-2 border border-gray-200 dark:border-gray-800 rounded-lg p-3">
         <p className="text-xs text-gray-500 mb-2">Skip conditions</p>
         {(['skip_if_rain', 'skip_if_soil_wet', 'skip_if_frost'] as const).map(key => (
           <div key={key} className="flex items-center gap-2">
@@ -104,7 +104,7 @@ function ScheduleForm({ initial, zones, onSave, onCancel }: {
           onChange={e => set('enabled', e.target.checked)} className="w-4 h-4 accent-primary-500" />
         <label htmlFor="sch-en" className="text-sm text-gray-300">{t('common.enabled')}</label>
       </div>
-      <div className="flex gap-3 justify-end pt-2 border-t border-gray-800">
+      <div className="flex gap-3 justify-end pt-2 border-t border-gray-200 dark:border-gray-800">
         <button type="button" onClick={onCancel} className="btn-secondary btn-sm">{t('common.cancel')}</button>
         <button type="submit" disabled={saving} className="btn-primary btn-sm">{saving ? '...' : t('common.save')}</button>
       </div>
@@ -141,7 +141,7 @@ export default function SchedulePage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">{t('schedule.title')}</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('schedule.title')}</h1>
         <button onClick={() => { setSelected(null); setModal('add') }} className="btn-primary btn-sm flex items-center gap-2">
           <Plus size={15} />{t('schedule.addSchedule')}
         </button>
@@ -159,26 +159,26 @@ export default function SchedulePage() {
             <div key={sch.id} className="card hover:border-gray-700 transition-colors">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <div className="font-semibold text-white text-lg">{sch.start_time}</div>
+                  <div className="font-semibold text-gray-900 dark:text-white text-lg">{sch.start_time}</div>
                   <div className="text-sm text-gray-400 mt-0.5">{sch.zone_name}</div>
                 </div>
                 <div className="flex gap-1 shrink-0">
                   <button onClick={() => { setSelected(sch); setModal('edit') }}
-                    className="p-1.5 rounded hover:bg-gray-800 text-gray-500 hover:text-gray-300"><Pencil size={13} /></button>
+                    className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"><Pencil size={13} /></button>
                   <button onClick={() => setDeleteTarget(sch)}
                     className="p-1.5 rounded hover:bg-red-900/40 text-gray-500 hover:text-red-400"><Trash2 size={13} /></button>
                 </div>
               </div>
               <div className="flex gap-1 flex-wrap mb-3">
                 {DAY_KEYS.map((d, i) => (
-                  <span key={d} className={`text-xs px-1.5 py-0.5 rounded font-medium ${sch.weekdays & (1 << i) ? 'bg-primary-800 text-primary-300' : 'bg-gray-800 text-gray-600'}`}>
+                  <span key={d} className={`text-xs px-1.5 py-0.5 rounded font-medium ${sch.weekdays & (1 << i) ? 'bg-primary-800 text-primary-300' : 'bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-600'}`}>
                     {t(`schedule.days.${d}`)}
                   </span>
                 ))}
               </div>
               <div className="flex flex-wrap gap-2 text-xs">
-                {sch.duration_override_min && <span className="bg-gray-800 text-gray-400 px-2 py-0.5 rounded">{sch.duration_override_min} min</span>}
-                <span className="bg-gray-800 text-gray-400 px-2 py-0.5 rounded">{t(`schedule.modes.${sch.mode}`).split(' ')[0]}</span>
+                {sch.duration_override_min && <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">{sch.duration_override_min} min</span>}
+                <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">{t(`schedule.modes.${sch.mode}`).split(' ')[0]}</span>
                 {!sch.enabled && <StatusBadge variant="gray">{t('common.disabled')}</StatusBadge>}
               </div>
               {sch.next_run && (

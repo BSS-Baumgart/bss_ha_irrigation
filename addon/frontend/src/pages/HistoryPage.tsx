@@ -32,7 +32,7 @@ export default function HistoryPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-xl font-bold text-white">{t('history.title')}</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('history.title')}</h1>
         <div className="flex gap-3 items-center">
           <select className="input py-1.5 text-sm w-48" value={zoneFilter ?? ''}
             onChange={e => setZoneFilter(e.target.value ? Number(e.target.value) : undefined)}>
@@ -58,7 +58,7 @@ export default function HistoryPage() {
         <div className="card p-0 overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-800 text-gray-500 text-xs">
+              <tr className="border-b border-gray-200 dark:border-gray-800 text-gray-500 text-xs">
                 <th className="text-left px-4 py-3">{t('history.startedAt')}</th>
                 <th className="text-left px-4 py-3">{t('zones.title')}</th>
                 <th className="text-left px-4 py-3">{t('history.duration')}</th>
@@ -68,14 +68,14 @@ export default function HistoryPage() {
             </thead>
             <tbody className="divide-y divide-gray-800">
               {logs.map(log => (
-                <tr key={log.id} className="hover:bg-gray-800/50 transition-colors">
+                <tr key={log.id} className="hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors">
                   <td className="px-4 py-3 text-gray-300 whitespace-nowrap">
                     {new Date(log.started_at).toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 text-white font-medium">{log.zone_name}</td>
+                  <td className="px-4 py-3 text-gray-900 dark:text-white font-medium">{log.zone_name}</td>
                   <td className="px-4 py-3 text-gray-400 font-mono">{formatDuration(log.duration_sec)}</td>
                   <td className="px-4 py-3">
-                    <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded">
+                    <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
                       {t(`history.triggers.${log.triggered_by}`)}
                     </span>
                   </td>
