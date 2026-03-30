@@ -20,7 +20,7 @@ export default function HeaderBar() {
   }
 
   return (
-    <header className="h-14 shrink-0 bg-gray-900 border-b border-gray-800 flex items-center px-4 gap-4">
+    <header className="h-14 shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 gap-4">
       {/* WS status dot */}
       <div className={clsx('w-2 h-2 rounded-full', wsConnected ? 'bg-primary-500' : 'bg-gray-600')} title={wsConnected ? 'Connected' : 'Disconnected'} />
 

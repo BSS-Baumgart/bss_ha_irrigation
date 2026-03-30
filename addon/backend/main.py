@@ -137,6 +137,11 @@ def health():
     return {"status": "ok", "version": "1.0.0"}
 
 
+@app.get("/api/config")
+def get_config():
+    return {"language": settings.default_language}
+
+
 # Serve React frontend — must be last
 static_dir = settings.static_dir
 if os.path.isdir(static_dir):

@@ -2,9 +2,10 @@ import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard, Layers, Zap, Radio, CalendarDays,
-  Cloud, History, Settings, Droplets,
+  Cloud, History, Droplets, Sun, Moon,
 } from 'lucide-react'
 import clsx from 'clsx'
+import { useIrrigationStore } from '../../store/irrigationStore'
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'nav.dashboard' },
@@ -24,18 +25,20 @@ const LANGS = [
 
 export default function Sidebar() {
   const { t, i18n } = useTranslation()
+  const { theme, toggleTheme } = useIrrigationStore()
 
   const changeLang = (code: string) => {
     i18n.changeLanguage(code)
-    localStorage.setItem('irrigation-lang', code)
+    // Mark as user-overridden so AppLayout won't reset it from backend config
+    localStorage.setItem('irrigation-lang-override', code)
   }
 
   return (
-    <aside className="w-56 flex flex-col bg-gray-900 border-r border-gray-800 shrink-0">
+    <aside className="w-56 flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shrink-0">
       {/* Logo */}
-      <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-800">
+      <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-200 dark:border-gray-800">
         <Droplets className="text-primary-500" size={22} />
-        <span className="font-bold text-white text-sm">Irrigation BSS</span>
+        <span className="font-bold text-gray-900 dark:text-white text-sm">Irrigation BSS</span>
       </div>
 
       {/* Navigation */}
@@ -49,7 +52,7 @@ export default function Sidebar() {
                 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
                 isActive
                   ? 'bg-primary-900 text-primary-400 font-medium'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
               )
             }
           >
@@ -59,8 +62,9 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Language switcher */}
-      <div className="px-4 py-3 border-t border-gray-800">
+      {/* Bottom controls */}
+      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800 space-y-2">
+        {/* Language switcher */}
         <div className="flex gap-1">
           {LANGS.map(({ code, label }) => (
             <button
@@ -70,13 +74,22 @@ export default function Sidebar() {
                 'flex-1 text-xs py-1 rounded font-medium transition-colors',
                 i18n.language === code
                   ? 'bg-primary-700 text-white'
-                  : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'
+                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
               )}
             >
               {label}
             </button>
           ))}
         </div>
+
+        {/* Theme toggle */}
+        <button
+          onClick={toggleTheme}
+          className="w-full flex items-center justify-center gap-2 text-xs py-1.5 rounded font-medium text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
+          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        </button>
       </div>
     </aside>
   )
