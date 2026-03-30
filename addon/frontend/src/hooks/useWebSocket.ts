@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useIrrigationStore } from '../store/irrigationStore'
 import { INGRESS_BASE } from '../lib/ingressBase'
+import { irrigationApi } from '../api/irrigation'
 
 export function useWebSocket() {
   const ws = useRef<WebSocket | null>(null)
@@ -9,6 +10,15 @@ export function useWebSocket() {
   useEffect(() => {
     const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
     const url = `${proto}://${window.location.host}${INGRESS_BASE}/ws`
+    const statusTimer = setInterval(() => {
+      irrigationApi.status().then((s) => {
+        setActiveZones(s.active_zones ?? [])
+      }).catch(() => {})
+    }, 3000)
+
+    irrigationApi.status().then((s) => {
+      setActiveZones(s.active_zones ?? [])
+    }).catch(() => {})
 
     const connect = () => {
       ws.current = new WebSocket(url)
@@ -48,6 +58,7 @@ export function useWebSocket() {
 
     connect()
     return () => {
+      clearInterval(statusTimer)
       ws.current?.close()
     }
   }, [setActiveZones, setWsConnected])

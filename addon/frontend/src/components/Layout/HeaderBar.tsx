@@ -16,7 +16,9 @@ export default function HeaderBar() {
   const isRaining = blockingSensors.some(s => s.sensor_type === 'rain' && s.is_blocking)
 
   const handleStopAll = async () => {
-    await irrigationApi.stopAll()
+    try {
+      await irrigationApi.stopAll()
+    } catch {}
   }
 
   return (

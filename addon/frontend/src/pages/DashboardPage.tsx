@@ -55,8 +55,22 @@ export default function DashboardPage() {
 
   const handleStart = async (zone: Zone) => {
     setStartingZone(zone.id)
-    try { await irrigationApi.start(zone.id) }
+    try {
+      await irrigationApi.start(zone.id)
+    } catch {}
     finally { setStartingZone(null) }
+  }
+
+  const handleStop = async (zoneId: number) => {
+    try {
+      await irrigationApi.stop(zoneId)
+    } catch {}
+  }
+
+  const handleStopAll = async () => {
+    try {
+      await irrigationApi.stopAll()
+    } catch {}
   }
 
   return (
@@ -99,7 +113,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3 mb-4">
             <Droplets className="text-primary-400 animate-pulse" size={18} />
             <span className="font-semibold text-primary-400">{t('header.watering')}</span>
-            <button onClick={() => irrigationApi.stopAll()}
+            <button onClick={handleStopAll}
               className="ml-auto btn-danger btn-sm flex items-center gap-1.5">
               <Square size={11} fill="currentColor" />{t('header.stopAll')}
             </button>
@@ -164,7 +178,7 @@ export default function DashboardPage() {
 
                   <div className="flex justify-end">
                     {isActive ? (
-                      <button onClick={() => irrigationApi.stop(zone.id)}
+                      <button onClick={() => handleStop(zone.id)}
                         className="btn-danger btn-sm flex items-center gap-1.5">
                         <Square size={11} fill="currentColor" />{t('zones.stopZone')}
                       </button>
