@@ -9,10 +9,13 @@ interface IrrigationStore {
   blockingSensors: Sensor[]
   wsConnected: boolean
   theme: Theme
+  sidebarOpen: boolean
   setActiveZones: (zones: ActiveZone[]) => void
   setBlockingSensors: (sensors: Sensor[]) => void
   setWsConnected: (v: boolean) => void
   toggleTheme: () => void
+  toggleSidebar: () => void
+  closeSidebar: () => void
 }
 
 const savedTheme = (localStorage.getItem('irrigation-theme') as Theme) || 'dark'
@@ -23,6 +26,7 @@ export const useIrrigationStore = create<IrrigationStore>((set, get) => ({
   blockingSensors: [],
   wsConnected: false,
   theme: savedTheme,
+  sidebarOpen: false,
   setActiveZones: (zones) => set({ activeZones: zones, anyWatering: zones.length > 0 }),
   setBlockingSensors: (sensors) => set({ blockingSensors: sensors }),
   setWsConnected: (v) => set({ wsConnected: v }),
@@ -31,4 +35,6 @@ export const useIrrigationStore = create<IrrigationStore>((set, get) => ({
     localStorage.setItem('irrigation-theme', next)
     set({ theme: next })
   },
+  toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
+  closeSidebar: () => set({ sidebarOpen: false }),
 }))

@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard, Layers, Zap, Radio, CalendarDays,
-  Cloud, History, Sun, Moon,
+  Cloud, History, Sun, Moon, X,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useIrrigationStore } from '../../store/irrigationStore'
@@ -25,7 +25,7 @@ const LANGS = [
 
 export default function Sidebar() {
   const { t, i18n } = useTranslation()
-  const { theme, toggleTheme } = useIrrigationStore()
+  const { theme, toggleTheme, closeSidebar } = useIrrigationStore()
 
   const changeLang = (code: string) => {
     i18n.changeLanguage(code)
@@ -33,11 +33,18 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-56 flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shrink-0">
+    <aside className="w-56 h-full flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
       {/* Logo */}
       <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-200 dark:border-gray-800">
-        <img src="icon.png" alt="Irrigation BSS" className="w-6 h-6 rounded" />
-        <span className="font-bold text-gray-900 dark:text-white text-sm">Irrigation BSS</span>
+        <img src="icon.png" alt="" className="w-6 h-6 rounded" />
+        <span className="font-bold text-gray-900 dark:text-white text-sm flex-1">Irrigation BSS</span>
+        <button
+          onClick={closeSidebar}
+          className="lg:hidden p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          aria-label="Close menu"
+        >
+          <X size={16} />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -46,6 +53,7 @@ export default function Sidebar() {
           <NavLink
             key={to}
             to={to}
+            onClick={closeSidebar}
             className={({ isActive }) =>
               clsx(
                 'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
@@ -63,7 +71,6 @@ export default function Sidebar() {
 
       {/* Bottom controls */}
       <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800 space-y-2">
-        {/* Language switcher */}
         <div className="flex gap-1">
           {LANGS.map(({ code, label }) => (
             <button
@@ -81,7 +88,6 @@ export default function Sidebar() {
           ))}
         </div>
 
-        {/* Theme toggle */}
         <button
           onClick={toggleTheme}
           className="w-full flex items-center justify-center gap-2 text-xs py-1.5 rounded font-medium text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
