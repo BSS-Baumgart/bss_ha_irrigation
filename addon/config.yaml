@@ -13,13 +13,11 @@ panel_icon: "mdi:sprinkler"
 panel_title: "Irrigation"
 panel_admin: false
 
+init: false
+
 homeassistant_api: true
 hassio_api: false
 auth_api: false
-
-map:
-  - config:rw
-  - share:rw
 
 options:
   log_level: "info"
