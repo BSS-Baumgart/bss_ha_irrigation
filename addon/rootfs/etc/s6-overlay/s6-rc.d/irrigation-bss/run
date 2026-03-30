@@ -1,0 +1,26 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Start Irrigation BSS backend
+# ==============================================================================
+
+# Read addon options
+LOG_LEVEL=$(bashio::config 'log_level')
+DEFAULT_LANGUAGE=$(bashio::config 'language')
+
+export HA_URL="http://supervisor/core"
+export HA_TOKEN="${SUPERVISOR_TOKEN}"
+export LOG_LEVEL="${LOG_LEVEL}"
+export DEFAULT_LANGUAGE="${DEFAULT_LANGUAGE}"
+export DATA_DIR="/data"
+export STATIC_DIR="/app/frontend/dist"
+
+bashio::log.info "Starting Irrigation BSS (lang=${DEFAULT_LANGUAGE}, log=${LOG_LEVEL})"
+
+mkdir -p "${DATA_DIR}"
+
+cd /app
+exec python -m uvicorn backend.main:app \
+    --host 0.0.0.0 \
+    --port 8099 \
+    --log-level "${LOG_LEVEL}"
