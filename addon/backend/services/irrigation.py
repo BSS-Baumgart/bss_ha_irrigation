@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 
 from backend.config import settings
 from backend.database.db import engine
-from backend.models import Zone, Valve, Sensor, WateringLog, SensorType, SkipReason, TriggerSource
+from backend.models import Zone, Valve, Sensor, WateringLog, SensorType, SkipReason, TriggerSource, AppSetting
 from backend.services import ha_client
 
 logger = logging.getLogger(__name__)
@@ -24,6 +24,12 @@ def set_ws_broadcast(fn):
 async def _broadcast(event: str, data: dict):
     if _ws_broadcast:
         await _ws_broadcast({"event": event, **data})
+
+
+def _get_main_valve_entity() -> Optional[str]:
+    with Session(engine) as session:
+        row = session.get(AppSetting, "main_valve_entity_id")
+        return row.value if row and row.value else None
 
 
 def is_watering(zone_id: int) -> bool:
@@ -109,6 +115,12 @@ async def start_zone(zone_id: int, duration_min: Optional[int] = None,
     if zone_id in _active:
         return {"ok": False, "error": "Zone already watering"}
 
+    if len(_active) == 0:
+        main_valve = _get_main_valve_entity()
+        if main_valve:
+            await ha_client.turn_on(main_valve)
+            logger.info(f"Main valve {main_valve} opened")
+
     for entity_id in valve_entities:
         await ha_client.turn_on(entity_id)
 
@@ -137,7 +149,10 @@ async def start_zone(zone_id: int, duration_min: Optional[int] = None,
         "log_id": log_id,
     }
 
-    await _broadcast("zone_started", {"zone_id": zone_id, "zone_name": zone_name, "duration_min": duration})
+    await _broadcast("zone_started", {
+        "zone_id": zone_id, "zone_name": zone_name, "duration_min": duration,
+        "active_zones": get_active_zones(),
+    })
     logger.info(f"Zone {zone_name} started ({duration} min)")
     return {"ok": True, "zone_id": zone_id, "duration_min": duration}
 
@@ -166,15 +181,25 @@ async def _auto_stop(zone_id: int, duration_min: int, valve_entities: List[str],
         for entity_id in valve_entities:
             await ha_client.turn_off(entity_id)
         info = _active.pop(zone_id, {})
+        if len(_active) == 0:
+            main_valve = _get_main_valve_entity()
+            if main_valve:
+                await ha_client.turn_off(main_valve)
+                logger.info(f"Main valve {main_valve} closed")
         _update_log(log_id, info.get("started_at"))
-        await _broadcast("zone_stopped", {"zone_id": zone_id, "reason": "completed"})
+        await _broadcast("zone_stopped", {"zone_id": zone_id, "reason": "completed", "active_zones": get_active_zones()})
         logger.info(f"Zone {zone_id} completed after {duration_min} min")
     except asyncio.CancelledError:
         for entity_id in valve_entities:
             await ha_client.turn_off(entity_id)
         info = _active.pop(zone_id, {})
+        if len(_active) == 0:
+            main_valve = _get_main_valve_entity()
+            if main_valve:
+                await ha_client.turn_off(main_valve)
+                logger.info(f"Main valve {main_valve} closed")
         _update_log(log_id, info.get("started_at"), skipped=True, skip_reason=SkipReason.manual_stop)
-        await _broadcast("zone_stopped", {"zone_id": zone_id, "reason": "cancelled"})
+        await _broadcast("zone_stopped", {"zone_id": zone_id, "reason": "cancelled", "active_zones": get_active_zones()})
 
 
 async def _finish_zone(zone_id: int, info: dict):
@@ -186,8 +211,14 @@ async def _finish_zone(zone_id: int, info: dict):
             ).all()
             for v in valves:
                 await ha_client.turn_off(v.entity_id)
+    _active.pop(zone_id, None)
+    if len(_active) == 0:
+        main_valve = _get_main_valve_entity()
+        if main_valve:
+            await ha_client.turn_off(main_valve)
+            logger.info(f"Main valve {main_valve} closed")
     _update_log(info.get("log_id"), info.get("started_at"))
-    await _broadcast("zone_stopped", {"zone_id": zone_id, "reason": "manual"})
+    await _broadcast("zone_stopped", {"zone_id": zone_id, "reason": "manual", "active_zones": get_active_zones()})
 
 
 def _update_log(log_id: int, started_at: Optional[datetime], skipped: bool = False,

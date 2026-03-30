@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, Zap, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, Pencil, Trash2, Zap, ToggleLeft, ToggleRight, ShieldCheck } from 'lucide-react'
 import { valvesApi } from '../api/valves'
 import { haEntitiesApi } from '../api/weather'
+import { settingsApi } from '../api/settings'
 import type { Valve, Zone, HAEntity } from '../types'
 import Modal from '../components/common/Modal'
 import ConfirmDialog from '../components/common/ConfirmDialog'
@@ -114,6 +115,41 @@ function ValveForm({ initial, zones, onSave, onCancel }: {
   )
 }
 
+function MainValveSection({ t }: { t: (k: string) => string }) {
+  const [entity, setEntity] = useState('')
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    settingsApi.getAll().then(cfg => {
+      if (cfg['main_valve_entity_id']) setEntity(cfg['main_valve_entity_id'] ?? '')
+    }).catch(() => {})
+  }, [])
+
+  const save = async () => {
+    await settingsApi.set('main_valve_entity_id', entity || null)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  return (
+    <div className="card border-primary-800/50">
+      <div className="flex items-center gap-2 mb-3">
+        <ShieldCheck size={16} className="text-primary-400" />
+        <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('valves.mainValve')}</span>
+      </div>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{t('valves.mainValveDesc')}</p>
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <EntityPicker value={entity} onChange={setEntity} type="valves" />
+        </div>
+        <button onClick={save} className="btn-primary btn-sm shrink-0">
+          {saved ? '✓' : t('common.save')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function ValvesPage() {
   const { t } = useTranslation()
   const [valves, setValves] = useState<Valve[]>([])
@@ -166,6 +202,8 @@ export default function ValvesPage() {
           <Plus size={15} />{t('valves.addValve')}
         </button>
       </div>
+
+      <MainValveSection t={t} />
       {loading ? <p className="text-gray-500 text-sm">{t('common.loading')}</p>
       : valves.length === 0 ? (
         <div className="card text-center py-14 text-gray-600">

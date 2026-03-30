@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0
+
+- Fixed: header bar now correctly shows active watering status via WebSocket (active_zones included in zone_started/zone_stopped events)
+- Added: main valve support — configure a master valve entity that opens before the first section starts and closes after the last section stops
+- Dashboard: sections shown as cards with valve count, next schedule time, and inline progress bar when watering
+- Renamed: "zones" → "sections" across the entire UI (PL: sekcje, EN: sections, DE: Sektionen)
+
 ## 1.2.0
 
 - Fixed light mode — all pages now readable (white text on white background resolved)
