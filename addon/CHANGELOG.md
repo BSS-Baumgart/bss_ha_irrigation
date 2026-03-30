@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1
+
+- Fixed: resolved backend 500 errors on irrigation status/start/stop endpoints during active watering.
+- Fixed: improved robustness of valve and main valve service calls to avoid unhandled runtime failures.
+- Fixed: header/dashboard watering state now has API polling fallback, so Stop All and active state remain visible even when WebSocket events are delayed.
+
 ## 1.3.0
 
 - Fixed: header bar now correctly shows active watering status via WebSocket (active_zones included in zone_started/zone_stopped events)
