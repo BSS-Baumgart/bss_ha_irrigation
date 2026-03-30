@@ -1,71 +1,74 @@
 # Irrigation BSS
 
-Advanced irrigation management addon for Home Assistant. Control zones, valves, sensors and schedules from a built-in sidebar panel.
+Advanced irrigation management addon for Home Assistant.
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Addon-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-## Features
+## What It Is
 
-- **Unlimited zones** — group solenoid valves into logical watering zones
-- **HA entity picker** — select valve and sensor entities directly from your HA instance
-- **Sensor support** — rain sensor, soil moisture, temperature (frost protection), flow meter
-- **Smart scheduler** — weekly schedule with per-zone time and duration, sequential or parallel mode
-- **Weather skip** — skip watering based on HA weather entity or Open-Meteo forecast
-- **Virtual entities** — irrigation state published back to HA for use in dashboards and automations
-- **Real-time UI** — live zone status, countdown timers, emergency stop
-- **Dark / light mode** — toggleable from the sidebar
-- **Multilingual** — Polish, English, German (community translations welcome)
+Irrigation BSS helps you manage garden watering directly from Home Assistant.
 
-## Installation
+Key capabilities:
 
-1. In Home Assistant go to **Settings → Add-ons → Add-on Store**
-2. Click the three-dot menu (⋮) in the top right → **Custom repositories**
-3. Add: `https://github.com/BSS-Baumgart/bss_ha_irrigation`
-4. Find **Irrigation BSS** in the store and click **Install**
-5. On the **Configuration** tab set your preferred `language` and `log_level`
-6. Click **Start** — the panel appears automatically in the HA sidebar
+- Watering sections with assigned valves
+- Weekly scheduler (sequential and parallel modes)
+- Manual quick start with custom duration
+- Blocking sensors (rain, soil moisture, temperature)
+- Weather integration
+- Live dashboard with active watering and remaining time
 
-No token or URL configuration needed — the addon connects to Home Assistant automatically via the Supervisor.
+## Installation (Stable)
 
-## First steps
+1. In Home Assistant, go to Settings -> Add-ons -> Add-on Store.
+2. Open the three-dot menu and select Custom repositories.
+3. Add this repository: https://github.com/BSS-Baumgart/bss_ha_irrigation
+4. Install the Irrigation BSS addon.
+5. In Configuration, set language and log_level.
+6. Start the addon.
 
-1. **Valves** — add HA switch or input_boolean entities that control your solenoid valves
-2. **Zones** — create zones and assign valves to them
-3. **Sensors** *(optional)* — add a rain sensor, soil moisture probe or temperature sensor
-4. **Schedule** — set days, start time and duration per zone
-5. **Dashboard** — monitor live status, start zones manually, see next scheduled watering
+## Installation (Develop Channel)
 
-## Virtual entities published to HA
+To test upcoming changes before stable releases, add the develop branch repository:
+
+https://github.com/BSS-Baumgart/bss_ha_irrigation#develop
+
+Use this on a separate test Home Assistant instance.
+
+## First Setup
+
+1. Valves: add HA entities (switch/input_boolean).
+2. Sections: create sections and assign valves.
+3. Sensors (optional): rain, soil moisture, temperature, flow.
+4. Schedule: configure weekdays, start times, and durations.
+5. Dashboard: monitor status and run manual quick actions.
+
+## Entities Published To Home Assistant
 
 | Entity | Type | Description |
-|--------|------|-------------|
-| `binary_sensor.irrigation_bss_watering` | binary_sensor | Any zone currently active |
-| `sensor.irrigation_bss_active_zone` | sensor | Name of the active zone |
-| `sensor.irrigation_bss_remaining_sec` | sensor | Remaining watering time in seconds |
-| `sensor.irrigation_bss_next_watering` | sensor | Next scheduled watering (ISO timestamp) |
-| `binary_sensor.irrigation_bss_rain_blocked` | binary_sensor | Watering blocked by rain sensor |
-| `binary_sensor.irrigation_bss_frost_blocked` | binary_sensor | Frost protection active |
-| `binary_sensor.irrigation_bss_zone_{id}` | binary_sensor | Per-zone watering state |
+|------|------|------|
+| binary_sensor.irrigation_bss_watering | binary_sensor | Any section is currently watering |
+| sensor.irrigation_bss_active_zone | sensor | Name of the active section |
+| sensor.irrigation_bss_remaining_sec | sensor | Remaining watering time in seconds |
+| sensor.irrigation_bss_next_watering | sensor | Next scheduled watering run |
+| binary_sensor.irrigation_bss_rain_blocked | binary_sensor | Watering blocked by rain |
+| binary_sensor.irrigation_bss_frost_blocked | binary_sensor | Watering blocked by frost protection |
+| binary_sensor.irrigation_bss_zone_{id} | binary_sensor | Per-section watering state |
 
-## Local development
+## Release Flow
 
-```bash
-# Backend
-cd addon
-pip install -r backend/requirements.txt
-cp .env.example .env   # fill in HA_URL and HA_TOKEN
-python -m uvicorn backend.main:app --reload --port 8099
+- Create feature branches from develop.
+- Merge features into develop for testing.
+- Open PR develop -> master only for releases.
+- Create tags and GitHub Releases from master.
 
-# Frontend (separate terminal)
-cd addon/frontend
-npm install
-npm run dev
-```
+## UI Preview
 
-## Contributing translations
-
-Copy `addon/frontend/public/locales/en/translation.json` to a new language folder and submit a pull request.
+![Dashboard](docs/screenshots/dashboard.png)
+![Sections](docs/screenshots/sections.png)
+![Valves](docs/screenshots/valves.png)
+![Sensors](docs/screenshots/sensors.png)
+![Schedule](docs/screenshots/schedule.png)
 
 ## License
 
