@@ -1,71 +1,97 @@
 # Irrigation BSS
 
-Advanced irrigation management addon for Home Assistant. Control zones, valves, sensors and schedules from a built-in sidebar panel.
+Advanced irrigation management addon for Home Assistant.
+
+Ten README jest przygotowany dla uzytkownikow Home Assistant, ktorzy chca szybko zrozumiec co robi addon i jak go dodac.
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Addon-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-## Features
+## Co to jest
 
-- **Unlimited zones** — group solenoid valves into logical watering zones
-- **HA entity picker** — select valve and sensor entities directly from your HA instance
-- **Sensor support** — rain sensor, soil moisture, temperature (frost protection), flow meter
-- **Smart scheduler** — weekly schedule with per-zone time and duration, sequential or parallel mode
-- **Weather skip** — skip watering based on HA weather entity or Open-Meteo forecast
-- **Virtual entities** — irrigation state published back to HA for use in dashboards and automations
-- **Real-time UI** — live zone status, countdown timers, emergency stop
-- **Dark / light mode** — toggleable from the sidebar
-- **Multilingual** — Polish, English, German (community translations welcome)
+Irrigation BSS pozwala sterowac podlewaniem ogrodu bezposrednio z panelu Home Assistant.
 
-## Installation
+Najwazniejsze funkcje:
 
-1. In Home Assistant go to **Settings → Add-ons → Add-on Store**
-2. Click the three-dot menu (⋮) in the top right → **Custom repositories**
-3. Add: `https://github.com/BSS-Baumgart/bss_ha_irrigation`
-4. Find **Irrigation BSS** in the store and click **Install**
-5. On the **Configuration** tab set your preferred `language` and `log_level`
-6. Click **Start** — the panel appears automatically in the HA sidebar
+- Sekcje podlewania z przypisanymi zaworami
+- Harmonogram tygodniowy (tryb sekwencyjny i rownolegly)
+- Szybki start reczny z ustawieniem czasu
+- Czujniki blokujace podlewanie (deszcz, wilgotnosc, temperatura)
+- Integracja z pogoda i publikacja encji do HA
+- Podglad na zywo aktywnej sekcji i czasu pozostalego
 
-No token or URL configuration needed — the addon connects to Home Assistant automatically via the Supervisor.
+## Instalacja (kanal stabilny)
 
-## First steps
+1. W Home Assistant przejdz do Settings -> Add-ons -> Add-on Store.
+2. Otworz menu z trzema kropkami i wybierz Custom repositories.
+3. Dodaj repozytorium: https://github.com/BSS-Baumgart/bss_ha_irrigation
+4. Zainstaluj addon Irrigation BSS.
+5. W zakladce Configuration ustaw language i log_level.
+6. Uruchom addon.
 
-1. **Valves** — add HA switch or input_boolean entities that control your solenoid valves
-2. **Zones** — create zones and assign valves to them
-3. **Sensors** *(optional)* — add a rain sensor, soil moisture probe or temperature sensor
-4. **Schedule** — set days, start time and duration per zone
-5. **Dashboard** — monitor live status, start zones manually, see next scheduled watering
+## Instalacja (kanal testowy develop)
 
-## Virtual entities published to HA
+Jesli chcesz testowac nowosci przed release dla userow, dodaj repozytorium z branchem develop:
 
-| Entity | Type | Description |
-|--------|------|-------------|
-| `binary_sensor.irrigation_bss_watering` | binary_sensor | Any zone currently active |
-| `sensor.irrigation_bss_active_zone` | sensor | Name of the active zone |
-| `sensor.irrigation_bss_remaining_sec` | sensor | Remaining watering time in seconds |
-| `sensor.irrigation_bss_next_watering` | sensor | Next scheduled watering (ISO timestamp) |
-| `binary_sensor.irrigation_bss_rain_blocked` | binary_sensor | Watering blocked by rain sensor |
-| `binary_sensor.irrigation_bss_frost_blocked` | binary_sensor | Frost protection active |
-| `binary_sensor.irrigation_bss_zone_{id}` | binary_sensor | Per-zone watering state |
+https://github.com/BSS-Baumgart/bss_ha_irrigation#develop
 
-## Local development
+To jest rekomendowane tylko na osobnej instancji testowej HA.
 
-```bash
-# Backend
-cd addon
-pip install -r backend/requirements.txt
-cp .env.example .env   # fill in HA_URL and HA_TOKEN
-python -m uvicorn backend.main:app --reload --port 8099
+## Co zobaczy uzytkownik po instalacji
 
-# Frontend (separate terminal)
-cd addon/frontend
-npm install
-npm run dev
-```
+- Sidebar panel Irrigation BSS w Home Assistant
+- Widok dashboard z aktywnym podlewaniem i szybkim startem
+- Konfiguracje sekcji, zaworow, czujnikow i harmonogramu
+- Encje publikowane do HA pod automatyzacje
 
-## Contributing translations
+## Pierwsza konfiguracja
 
-Copy `addon/frontend/public/locales/en/translation.json` to a new language folder and submit a pull request.
+1. Zawory: dodaj encje HA (switch/input_boolean).
+2. Sekcje: utworz sekcje i przypisz zawory.
+3. Czujniki (opcjonalnie): deszcz, wilgotnosc, temperatura, przeplyw.
+4. Harmonogram: ustaw dni, godziny i czas.
+5. Dashboard: monitoruj stan i uruchamiaj szybkie akcje reczne.
+
+## Encje publikowane do Home Assistant
+
+| Encja | Typ | Opis |
+|------|------|------|
+| binary_sensor.irrigation_bss_watering | binary_sensor | Czy jakakolwiek sekcja aktualnie podlewa |
+| sensor.irrigation_bss_active_zone | sensor | Nazwa aktywnej sekcji |
+| sensor.irrigation_bss_remaining_sec | sensor | Pozostaly czas podlewania w sekundach |
+| sensor.irrigation_bss_next_watering | sensor | Najblizsze podlewanie z harmonogramu |
+| binary_sensor.irrigation_bss_rain_blocked | binary_sensor | Blokada przez deszcz |
+| binary_sensor.irrigation_bss_frost_blocked | binary_sensor | Blokada przez temperature/frost |
+| binary_sensor.irrigation_bss_zone_{id} | binary_sensor | Stan konkretnej sekcji |
+
+## Workflow wydań
+
+- Feature branche tworz z develop.
+- Merge feature -> develop na testy.
+- PR develop -> master tylko pod release.
+- Tag i GitHub Release tworz tylko z master.
+
+## Screenshoty UI
+
+Pliki screenshotow wrzucaj do folderu:
+
+docs/screenshots/
+
+Rekomendowane nazwy:
+
+- docs/screenshots/dashboard.png
+- docs/screenshots/sections.png
+- docs/screenshots/valves.png
+- docs/screenshots/sensors.png
+- docs/screenshots/schedule.png
+
+Po dodaniu plikow, obrazki beda widoczne ponizej:
+
+![Dashboard](docs/screenshots/dashboard.png)
+![Sections](docs/screenshots/sections.png)
+![Valves](docs/screenshots/valves.png)
+![Sensors](docs/screenshots/sensors.png)
+![Schedule](docs/screenshots/schedule.png)
 
 ## License
 

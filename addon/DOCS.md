@@ -19,7 +19,7 @@ The addon connects to Home Assistant via the Supervisor. No token or URL configu
 | `log_level` | debug / info / warning / error | info | Backend log verbosity |
 | `language` | pl / en / de | en | Default UI language on fresh install |
 
-The language can also be changed at any time using the switcher in the UI sidebar.
+UI language follows the addon configuration.
 
 ## Getting started
 
@@ -62,6 +62,6 @@ The addon publishes its state back to Home Assistant as entities you can use in 
 
 ## Languages
 
-The UI is available in **Polish**, **English** and **German**. The language set in addon configuration is the default on first launch. Users can switch language at any time from the sidebar without restarting the addon.
+The UI is available in **Polish**, **English** and **German**. The language set in addon configuration is used by the UI.
 
 To contribute a translation, add `frontend/public/locales/{lang}/translation.json` based on the English template.
