@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useIrrigationStore } from '../store/irrigationStore'
-import { INGRESS_BASE } from '../main'
+import { INGRESS_BASE } from '../lib/ingressBase'
 
 export function useWebSocket() {
   const ws = useRef<WebSocket | null>(null)

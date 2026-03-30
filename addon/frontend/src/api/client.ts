@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { INGRESS_BASE } from '../main'
+import { INGRESS_BASE } from '../lib/ingressBase'
 
 const client = axios.create({
   baseURL: INGRESS_BASE,
