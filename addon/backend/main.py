@@ -58,6 +58,12 @@ async def lifespan(app: FastAPI):
 
     irrigation.set_ws_broadcast(broadcast)
 
+    try:
+        recovery = await irrigation.recover_active_watering()
+        logger.info(f"Runtime recovery: {recovery}")
+    except Exception as e:
+        logger.warning(f"Runtime recovery failed: {e}")
+
     logger.info("Starting scheduler...")
     sched.start()
 
@@ -71,7 +77,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down...")
     ha_publisher.stop()
     sched.stop()
-    await irrigation.stop_all()
+    # Keep runtime state in DB so interrupted watering can be recovered on next startup.
 
 
 app = FastAPI(
