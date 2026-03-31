@@ -2,26 +2,34 @@ from typing import Dict, Optional
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 
-from backend.database.db import get_session
+from backend.database.db import get_session, engine
 from backend.models import AppSetting, SettingWrite
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 
 
+def _ensure_settings_table() -> None:
+    # Make settings endpoints resilient for existing DBs created before this table existed.
+    AppSetting.__table__.create(bind=engine, checkfirst=True)
+
+
 @router.get("", response_model=Dict[str, Optional[str]])
 def get_all(session: Session = Depends(get_session)):
+    _ensure_settings_table()
     rows = session.exec(select(AppSetting)).all()
     return {r.key: r.value for r in rows}
 
 
 @router.get("/{key}")
 def get_one(key: str, session: Session = Depends(get_session)):
+    _ensure_settings_table()
     row = session.get(AppSetting, key)
     return {"key": key, "value": row.value if row else None}
 
 
 @router.put("/{key}")
 def set_one(key: str, body: SettingWrite, session: Session = Depends(get_session)):
+    _ensure_settings_table()
     row = session.get(AppSetting, key)
     if row:
         row.value = body.value

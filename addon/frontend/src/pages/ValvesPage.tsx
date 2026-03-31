@@ -118,17 +118,29 @@ function ValveForm({ initial, zones, onSave, onCancel }: {
 function MainValveSection({ t }: { t: (k: string) => string }) {
   const [entity, setEntity] = useState('')
   const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     settingsApi.getAll().then(cfg => {
-      if (cfg['main_valve_entity_id']) setEntity(cfg['main_valve_entity_id'] ?? '')
+      setEntity(typeof cfg['main_valve_entity_id'] === 'string' ? cfg['main_valve_entity_id'] : '')
     }).catch(() => {})
   }, [])
 
   const save = async () => {
-    await settingsApi.set('main_valve_entity_id', entity || null)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    setSaving(true)
+    setError('')
+    setSaved(false)
+    try {
+      const result = await settingsApi.set('main_valve_entity_id', entity || null)
+      setEntity(typeof result?.value === 'string' ? result.value : '')
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -145,11 +157,12 @@ function MainValveSection({ t }: { t: (k: string) => string }) {
           <div className="flex-1">
             <EntityPicker value={entity} onChange={setEntity} type="valves" />
           </div>
-          <button onClick={save} className="btn-primary btn-sm shrink-0 min-w-[88px]">
+          <button onClick={save} disabled={saving} className="btn-primary btn-sm shrink-0 min-w-[88px] disabled:opacity-60">
             {saved ? 'OK' : t('common.save')}
           </button>
         </div>
       </div>
+      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
     </div>
   )
 }
