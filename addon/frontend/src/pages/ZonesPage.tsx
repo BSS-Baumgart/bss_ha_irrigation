@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Play, Square, Pencil, Trash2, Layers } from 'lucide-react'
+import { Plus, Play, Square, Pencil, Trash2, Layers, Zap } from 'lucide-react'
 import { zonesApi } from '../api/zones'
+import { valvesApi } from '../api/valves'
 import { irrigationApi } from '../api/irrigation'
-import type { Zone } from '../types'
+import type { Zone, Valve } from '../types'
 import Modal from '../components/common/Modal'
 import ConfirmDialog from '../components/common/ConfirmDialog'
 import StatusBadge from '../components/common/StatusBadge'
@@ -109,12 +110,16 @@ function StartDialog({ zone, onClose }: { zone: Zone; onClose: () => void }) {
 export default function ZonesPage() {
   const { t } = useTranslation()
   const [zones, setZones] = useState<Zone[]>([])
+  const [valves, setValves] = useState<Valve[]>([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState<'add' | 'edit' | 'start' | null>(null)
   const [selected, setSelected] = useState<Zone | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Zone | null>(null)
 
-  const load = () => zonesApi.list().then(setZones).finally(() => setLoading(false))
+  const load = () => Promise.all([
+    zonesApi.list().then(setZones),
+    valvesApi.list().then(setValves),
+  ]).finally(() => setLoading(false))
   useEffect(() => { load() }, [])
 
   useEffect(() => {
@@ -154,7 +159,9 @@ export default function ZonesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {zones.map(zone => (
+          {zones.map(zone => {
+            const zoneValves = valves.filter(v => v.zone_id === zone.id)
+            return (
             <div key={zone.id} className="card hover:border-gray-700 transition-colors">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2 min-w-0">
@@ -169,12 +176,28 @@ export default function ZonesPage() {
                 </div>
               </div>
               {zone.description && <p className="text-xs text-gray-500 mb-3 truncate">{zone.description}</p>}
-              <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400 mb-4">
+              <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
                 <span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">{zone.duration_min} min</span>
                 <span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">#{zone.sequence_order}</span>
-                <span className="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">{zone.valve_count} {t('zones.valveCount').toLowerCase()}</span>
                 {!zone.enabled && <StatusBadge variant="gray">{t('common.disabled')}</StatusBadge>}
               </div>
+
+              {/* Valve list */}
+              <div className="mb-4 min-h-[28px]">
+                {zoneValves.length === 0 ? (
+                  <p className="text-xs text-yellow-600 dark:text-yellow-500 italic">{t('zones.assignValvesHint')}</p>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {zoneValves.map(v => (
+                      <span key={v.id}
+                        className="inline-flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">
+                        <Zap size={10} className="opacity-50" />{v.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center justify-between">
                 {zone.is_watering
                   ? <StatusBadge variant="green" pulse>{t('zones.isWatering')}</StatusBadge>
@@ -186,17 +209,14 @@ export default function ZonesPage() {
                   </button>
                 ) : (
                   <button onClick={() => { setSelected(zone); setModal('start') }}
-                    disabled={!zone.enabled || zone.valve_count === 0}
+                    disabled={!zone.enabled || zoneValves.length === 0}
                     className="btn-primary btn-sm flex items-center gap-1.5 disabled:opacity-40">
                     <Play size={11} />{t('zones.startZone')}
                   </button>
                 )}
               </div>
-              {zone.valve_count === 0 && !zone.is_watering && (
-                <p className="text-xs text-yellow-600 mt-2">{t('zones.noValves')}</p>
-              )}
             </div>
-          ))}
+          )})}
         </div>
       )}
 

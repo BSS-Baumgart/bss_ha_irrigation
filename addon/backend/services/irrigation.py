@@ -250,7 +250,28 @@ def get_active_zones() -> List[dict]:
     return result
 
 
-async def check_sensors_blocking(zone_id: Optional[int] = None) -> Optional[SkipReason]:
+async def check_sensors_blocking(
+    skip_if_rain: bool = True,
+    skip_if_soil_wet: bool = True,
+    skip_if_frost: bool = True,
+) -> Optional[SkipReason]:
+    """
+    Evaluate all enabled sensors and return a SkipReason if watering should be blocked.
+
+    Aggregation rule: ANY enabled sensor of the given type that exceeds its threshold
+    is sufficient to block watering (fail-safe).
+
+    Sensor types:
+    - rain:        binary (on/off). Blocks if state == 'on' and skip_if_rain is True.
+    - temperature: numeric. Blocks if value < threshold (default 2 °C) and skip_if_frost.
+    - soil:        numeric. Blocks if value > threshold (default 80 %) and skip_if_soil_wet.
+    - flow:        numeric. Blocks if value > threshold while no zone is currently active
+                   (unexpected flow may indicate a running tap or system already open).
+    - weather:     state string. Blocks on precipitation conditions (rainy/pouring/snowy/
+                   lightning-rainy) when skip_if_rain is True.
+    """
+    _RAIN_WEATHER_STATES = {"rainy", "pouring", "snowy", "snowy-rainy", "lightning-rainy", "hail"}
+
     with Session(engine) as session:
         sensors = session.exec(select(Sensor).where(Sensor.enabled == True)).all()
 
@@ -259,33 +280,62 @@ async def check_sensors_blocking(zone_id: Optional[int] = None) -> Optional[Skip
         if not state:
             continue
 
-        val = state.get("state", "")
+        val = str(state.get("state", "")).strip().lower()
+        if val in ("unknown", "unavailable", "none", ""):
+            continue
 
-        if sensor.sensor_type == SensorType.rain:
+        if sensor.sensor_type == SensorType.rain and skip_if_rain:
             if val == "on":
+                logger.info(f"Sensor block: rain sensor {sensor.entity_id} is ON")
                 return SkipReason.rain
 
-        elif sensor.sensor_type == SensorType.temperature:
+        elif sensor.sensor_type == SensorType.temperature and skip_if_frost:
             try:
                 if float(val) < (sensor.threshold if sensor.threshold is not None else 2.0):
+                    logger.info(f"Sensor block: temperature {sensor.entity_id} = {val} below threshold")
                     return SkipReason.frost
             except (ValueError, TypeError):
                 pass
 
-        elif sensor.sensor_type == SensorType.soil:
+        elif sensor.sensor_type == SensorType.soil and skip_if_soil_wet:
             try:
                 threshold = sensor.threshold if sensor.threshold is not None else 80.0
                 if float(val) > threshold:
+                    logger.info(f"Sensor block: soil moisture {sensor.entity_id} = {val}% above {threshold}%")
                     return SkipReason.soil_wet
             except (ValueError, TypeError):
                 pass
+
+        elif sensor.sensor_type == SensorType.flow:
+            # Block only when no zone is currently active — unexpected flow suggests
+            # a valve is already open or there is water usage from another source.
+            if len(_active) == 0:
+                try:
+                    threshold = sensor.threshold if sensor.threshold is not None else 0.0
+                    if float(val) > threshold:
+                        logger.info(
+                            f"Sensor block: flow meter {sensor.entity_id} = {val} L/min "
+                            f"(unexpected flow while idle, threshold={threshold})"
+                        )
+                        return SkipReason.soil_wet  # reuse closest reason; frontend shows it
+                except (ValueError, TypeError):
+                    pass
+
+        elif sensor.sensor_type == SensorType.weather and skip_if_rain:
+            raw_state = str(state.get("state", "")).strip().lower()
+            if raw_state in _RAIN_WEATHER_STATES:
+                logger.info(f"Sensor block: weather entity {sensor.entity_id} state={raw_state}")
+                return SkipReason.rain
 
     return None
 
 
 async def start_zone(zone_id: int, duration_min: Optional[int] = None,
                      triggered_by: TriggerSource = TriggerSource.manual,
-                     skip_sensor_check: bool = False) -> dict:
+                     skip_sensor_check: bool = False,
+                     skip_if_rain: bool = True,
+                     skip_if_soil_wet: bool = True,
+                     skip_if_frost: bool = True) -> dict:
     with Session(engine) as session:
         zone = session.get(Zone, zone_id)
         if not zone:
@@ -306,7 +356,11 @@ async def start_zone(zone_id: int, duration_min: Optional[int] = None,
         zone_name = zone.name
 
     if not skip_sensor_check:
-        skip = await check_sensors_blocking(zone_id)
+        skip = await check_sensors_blocking(
+            skip_if_rain=skip_if_rain,
+            skip_if_soil_wet=skip_if_soil_wet,
+            skip_if_frost=skip_if_frost,
+        )
         if skip:
             _log_skip(zone_id, zone_name, valve_ids, skip, triggered_by)
             return {"ok": False, "skipped": True, "skip_reason": skip.value}
