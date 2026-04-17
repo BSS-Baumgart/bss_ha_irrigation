@@ -74,8 +74,11 @@ function SensorForm({ initial, onSave, onCancel }: {
     finally { setSaving(false) }
   }
 
-  const showThreshold = form.sensor_type === 'soil' || form.sensor_type === 'temperature'
-  const thresholdLabel = form.sensor_type === 'soil' ? `${t('sensors.threshold')} (%)` : `${t('sensors.threshold')} (°C)`
+  const showThreshold = form.sensor_type === 'soil' || form.sensor_type === 'temperature' || form.sensor_type === 'flow'
+  const thresholdLabel =
+    form.sensor_type === 'soil' ? `${t('sensors.threshold')} (%)` :
+    form.sensor_type === 'flow' ? `${t('sensors.threshold')} (L/min)` :
+    `${t('sensors.threshold')} (°C)`
 
   return (
     <form onSubmit={submit} className="p-5 space-y-4">
@@ -86,6 +89,7 @@ function SensorForm({ initial, onSave, onCancel }: {
           onChange={e => set('sensor_type', e.target.value as SensorType)}>
           {SENSOR_TYPES.map(tp => <option key={tp} value={tp}>{t(`sensors.types.${tp}`)}</option>)}
         </select>
+        <p className="text-xs text-gray-500 mt-1">{t(`sensors.typeDescs.${form.sensor_type}`)}</p>
       </div>
       <div>
         <label className="label">{t('valves.entityId')} *</label>
@@ -100,10 +104,10 @@ function SensorForm({ initial, onSave, onCancel }: {
         <div>
           <label className="label">{thresholdLabel}</label>
           <input className="input" type="number" step="0.1"
-            value={form.threshold ?? (form.sensor_type === 'soil' ? 80 : 2)}
+            value={form.threshold ?? (form.sensor_type === 'soil' ? 80 : form.sensor_type === 'flow' ? 0 : 2)}
             onChange={e => set('threshold', Number(e.target.value))} />
           <p className="text-xs text-gray-500 mt-1">
-            {form.sensor_type === 'soil' ? 'Skip watering when soil moisture exceeds this value' : 'Freeze protection: block watering below this temperature'}
+            {t(`sensors.thresholdDescs.${form.sensor_type}`)}
           </p>
         </div>
       )}

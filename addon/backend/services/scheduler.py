@@ -1,6 +1,7 @@
 """
 APScheduler — loads schedules from DB, fires zone watering at configured times.
 """
+import asyncio
 import logging
 from datetime import datetime
 
@@ -9,7 +10,7 @@ from apscheduler.triggers.cron import CronTrigger
 from sqlmodel import Session, select
 
 from backend.database.db import engine
-from backend.models import Schedule, Zone, TriggerSource
+from backend.models import Schedule, Zone, TriggerSource, schedule_zone_ids
 from backend.services import irrigation
 
 logger = logging.getLogger(__name__)
@@ -29,17 +30,56 @@ async def _fire_schedule(schedule_id: int):
         schedule = session.get(Schedule, schedule_id)
         if not schedule or not schedule.enabled:
             return
+        zone_ids = schedule_zone_ids(schedule)
         zone = session.get(Zone, schedule.zone_id)
         zone_name = zone.name if zone else "Unknown"
+        skip_if_rain = schedule.skip_if_rain
+        skip_if_soil_wet = schedule.skip_if_soil_wet
+        skip_if_frost = schedule.skip_if_frost
+        duration_override = schedule.duration_override_min
+        mode = schedule.mode
 
-    logger.info(f"Scheduler firing: zone_id={schedule.zone_id} ({zone_name})")
-    result = await irrigation.start_zone(
-        zone_id=schedule.zone_id,
-        duration_min=schedule.duration_override_min,
-        triggered_by=TriggerSource.schedule,
+    logger.info(
+        f"Scheduler firing: schedule_id={schedule_id} zones={zone_ids} "
+        f"mode={mode} ({zone_name} + {len(zone_ids)-1} more)"
     )
-    if not result.get("ok"):
-        logger.warning(f"Schedule {schedule_id} skipped: {result}")
+
+    if mode == "sequential" or len(zone_ids) > 1:
+        # Sequential: run each zone one after another, waiting for completion.
+        for zid in zone_ids:
+            result = await irrigation.start_zone(
+                zone_id=zid,
+                duration_min=duration_override,
+                triggered_by=TriggerSource.schedule,
+                skip_if_rain=skip_if_rain,
+                skip_if_soil_wet=skip_if_soil_wet,
+                skip_if_frost=skip_if_frost,
+            )
+            if not result.get("ok"):
+                logger.warning(f"Schedule {schedule_id} zone {zid} skipped/failed: {result}")
+                if result.get("skipped"):
+                    # Sensor block applies globally — skip remaining zones too
+                    break
+                continue
+            # Wait for the zone to finish before starting the next one
+            elapsed = 0
+            wait_interval = 5
+            total_wait = (result.get("duration_min") or 15) * 60 + 30  # +30s buffer
+            while irrigation.is_watering(zid) and elapsed < total_wait:
+                await asyncio.sleep(wait_interval)
+                elapsed += wait_interval
+    else:
+        # Parallel: just start the single (or all) zones without waiting
+        result = await irrigation.start_zone(
+            zone_id=zone_ids[0],
+            duration_min=duration_override,
+            triggered_by=TriggerSource.schedule,
+            skip_if_rain=skip_if_rain,
+            skip_if_soil_wet=skip_if_soil_wet,
+            skip_if_frost=skip_if_frost,
+        )
+        if not result.get("ok"):
+            logger.warning(f"Schedule {schedule_id} skipped: {result}")
 
 
 def reload_schedules():

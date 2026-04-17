@@ -1,4 +1,4 @@
-# Irrigation BSS
+﻿# Irrigation BSS
 
 Advanced irrigation management addon for Home Assistant.
 
