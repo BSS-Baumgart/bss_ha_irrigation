@@ -12,6 +12,7 @@ build/
 venv/
 env/
 *.egg
+SKILL.md
 
 # Database & data
 *.db
