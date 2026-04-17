@@ -72,7 +72,8 @@
     "startZone": "Start",
     "stopZone": "Stop",
     "isWatering": "Watering...",
-    "noValves": "No valves"
+    "noValves": "No valves",
+    "assignValvesHint": "No valves assigned — go to Valves to assign them to this section."
   },
   "valves": {
     "title": "Valves",
@@ -105,6 +106,18 @@
       "weather": "Weather"
     },
     "threshold": "Threshold",
+    "typeDescs": {
+      "rain": "Binary sensor (e.g. rain gauge contact). Blocks watering when state is ON.",
+      "soil": "Soil moisture sensor (%). Blocks watering when moisture exceeds the threshold.",
+      "flow": "Flow meter (L/min). Blocks watering start when unexpected flow is detected while no zone is active.",
+      "temperature": "Temperature sensor (\u00b0C). Frost protection: blocks watering when temperature is below the threshold.",
+      "weather": "HA weather entity. Blocks watering when the weather condition indicates precipitation."
+    },
+    "thresholdDescs": {
+      "soil": "Block watering when soil moisture is above this value.",
+      "flow": "Block watering when flow is above this value while no zone is active (0 = any flow).",
+      "temperature": "Block watering when temperature is below this value (frost protection)."
+    },
     "blocking": "Blocking watering",
     "notBlocking": "Watering allowed",
     "currentValue": "Current value"
@@ -116,6 +129,8 @@
     "deleteSchedule": "Delete schedule",
     "deleteConfirm": "Are you sure you want to delete this schedule?",
     "zone": "Section",
+    "zones": "Sections",
+    "multiZoneHint": "{{count}} sections will run sequentially one after another.",
     "startTime": "Start time",
     "duration": "Duration (min)",
     "durationOverride": "Override duration",

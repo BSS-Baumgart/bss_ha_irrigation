@@ -2,6 +2,7 @@ from typing import Optional
 from enum import Enum
 from datetime import datetime
 from sqlmodel import SQLModel, Field
+from pydantic import field_serializer
 
 
 class SkipReason(str, Enum):
@@ -32,6 +33,15 @@ class WateringLog(SQLModel, table=True):
     water_liters: Optional[float] = None    # from flow sensor if available
 
 
+def _to_utc_str(v: Optional[datetime]) -> Optional[str]:
+    """Serialize a naive-UTC or aware datetime to an ISO string with 'Z' suffix."""
+    if v is None:
+        return None
+    if v.tzinfo is not None:
+        return v.isoformat()
+    return v.isoformat() + "Z"
+
+
 class WateringLogRead(SQLModel):
     id: int
     zone_id: Optional[int]
@@ -43,3 +53,11 @@ class WateringLogRead(SQLModel):
     skipped: bool
     skip_reason: Optional[SkipReason]
     water_liters: Optional[float]
+
+    @field_serializer("started_at")
+    def _ser_started(self, v: datetime) -> str:
+        return _to_utc_str(v) or ""
+
+    @field_serializer("ended_at")
+    def _ser_ended(self, v: Optional[datetime]) -> Optional[str]:
+        return _to_utc_str(v)

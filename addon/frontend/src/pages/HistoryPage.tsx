@@ -13,6 +13,13 @@ function formatDuration(sec?: number) {
   return `${m}m ${s}s`
 }
 
+/** Parse date string treating bare ISO strings (no tz indicator) as UTC. */
+function parseUtcDate(value: string): Date {
+  if (!value) return new Date(NaN)
+  const normalized = value.endsWith('Z') || value.includes('+') ? value : value + 'Z'
+  return new Date(normalized)
+}
+
 export default function HistoryPage() {
   const { t } = useTranslation()
   const [logs, setLogs] = useState<WateringLog[]>([])
@@ -70,7 +77,7 @@ export default function HistoryPage() {
               {logs.map(log => (
                 <tr key={log.id} className="hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors">
                   <td className="px-4 py-3 text-gray-300 whitespace-nowrap">
-                    {new Date(log.started_at).toLocaleString()}
+                    {parseUtcDate(log.started_at).toLocaleString()}
                   </td>
                   <td className="px-4 py-3 text-gray-900 dark:text-white font-medium">{log.zone_name}</td>
                   <td className="px-4 py-3 text-gray-400 font-mono">{formatDuration(log.duration_sec)}</td>

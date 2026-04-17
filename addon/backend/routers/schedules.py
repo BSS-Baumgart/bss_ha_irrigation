@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from backend.database.db import get_session
-from backend.models import Schedule, ScheduleCreate, ScheduleUpdate, ScheduleRead, Zone
+from backend.models import Schedule, ScheduleCreate, ScheduleUpdate, ScheduleRead, Zone, schedule_zone_ids
 from backend.services import scheduler as sched_service
 
 router = APIRouter(prefix="/api/schedules", tags=["schedules"])
@@ -13,6 +13,7 @@ def _enrich(schedule: Schedule, session: Session) -> ScheduleRead:
     sr = ScheduleRead.model_validate(schedule)
     zone = session.get(Zone, schedule.zone_id)
     sr.zone_name = zone.name if zone else None
+    sr.all_zone_ids = schedule_zone_ids(schedule)
     sr.next_run = sched_service.get_next_run(schedule.id)
     return sr
 

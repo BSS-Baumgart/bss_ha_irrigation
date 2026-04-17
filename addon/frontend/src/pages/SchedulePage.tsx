@@ -23,8 +23,15 @@ function ScheduleForm({ initial, zones, onSave, onCancel }: {
   onSave: (data: Partial<Schedule>) => Promise<void>; onCancel: () => void
 }) {
   const { t } = useTranslation()
+
+  // Resolve initial selected zone IDs (all_zone_ids from backend or just zone_id)
+  const initialZoneIds: number[] = initial?.all_zone_ids?.length
+    ? initial.all_zone_ids
+    : initial?.zone_id ? [initial.zone_id] : (zones[0] ? [zones[0].id] : [])
+
+  const [selectedZoneIds, setSelectedZoneIds] = useState<number[]>(initialZoneIds)
   const [form, setForm] = useState<Partial<Schedule>>({
-    zone_id: zones[0]?.id, weekdays: 0b1111111, start_time: '07:00',
+    zone_id: initialZoneIds[0], weekdays: 0b1111111, start_time: '07:00',
     duration_override_min: undefined, mode: 'sequential', enabled: true,
     skip_if_rain: true, skip_if_soil_wet: true, skip_if_frost: true,
     ...initial,
@@ -39,9 +46,27 @@ function ScheduleForm({ initial, zones, onSave, onCancel }: {
     setDays(nd); set('weekdays', bitmaskFromWeekdays(nd))
   }
 
+  const toggleZone = (zoneId: number) => {
+    setSelectedZoneIds(prev => {
+      if (prev.includes(zoneId)) {
+        // At least one zone must be selected
+        if (prev.length === 1) return prev
+        return prev.filter(id => id !== zoneId)
+      } else {
+        return [...prev, zoneId]
+      }
+    })
+  }
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true); setErr('')
-    try { await onSave(form) }
+    const [primaryZone, ...extras] = selectedZoneIds
+    const payload: Partial<Schedule> = {
+      ...form,
+      zone_id: primaryZone,
+      extra_zone_ids: extras.length > 0 ? extras.join(',') : undefined,
+    }
+    try { await onSave(payload) }
     catch (e: unknown) { setErr(e instanceof Error ? e.message : String(e)) }
     finally { setSaving(false) }
   }
@@ -50,12 +75,24 @@ function ScheduleForm({ initial, zones, onSave, onCancel }: {
     <form onSubmit={submit} className="p-5 space-y-4">
       {err && <div className="bg-red-900/40 border border-red-800 text-red-300 text-sm rounded-lg px-3 py-2">{err}</div>}
       <div>
-        <label className="label">{t('schedule.zone')} *</label>
-        <select className="input" required value={form.zone_id ?? ''}
-          onChange={e => set('zone_id', Number(e.target.value))}>
-          <option value="">— {t('schedule.zone')} —</option>
-          {zones.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
-        </select>
+        <label className="label">{t('schedule.zones')} *</label>
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden max-h-44 overflow-y-auto">
+          {zones.map(z => (
+            <button key={z.id} type="button" onClick={() => toggleZone(z.id)}
+              className={`w-full text-left px-3 py-2 flex items-center gap-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${selectedZoneIds.includes(z.id) ? 'bg-primary-900/30 text-primary-300' : 'text-gray-300'}`}>
+              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: z.color }} />
+              {z.name}
+              {selectedZoneIds.includes(z.id) && (
+                <span className="ml-auto text-xs bg-primary-800 text-primary-300 px-1.5 py-0.5 rounded">
+                  #{selectedZoneIds.indexOf(z.id) + 1}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+        {selectedZoneIds.length > 1 && (
+          <p className="text-xs text-primary-400 mt-1">{t('schedule.multiZoneHint', { count: selectedZoneIds.length })}</p>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -158,9 +195,22 @@ export default function SchedulePage() {
           {schedules.map(sch => (
             <div key={sch.id} className="card hover:border-gray-700 transition-colors">
               <div className="flex items-start justify-between mb-3">
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="font-semibold text-gray-900 dark:text-white text-lg">{sch.start_time}</div>
-                  <div className="text-sm text-gray-400 mt-0.5">{sch.zone_name}</div>
+                  {sch.all_zone_ids && sch.all_zone_ids.length > 1 ? (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {sch.all_zone_ids.map((zid, idx) => {
+                        const z = zones.find(x => x.id === zid)
+                        return z ? (
+                          <span key={zid} className="inline-flex items-center gap-1 text-xs bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded">
+                            <span className="text-gray-500">{idx + 1}.</span> {z.name}
+                          </span>
+                        ) : null
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-400 mt-0.5">{sch.zone_name}</div>
+                  )}
                 </div>
                 <div className="flex gap-1 shrink-0">
                   <button onClick={() => { setSelected(sch); setModal('edit') }}

@@ -72,7 +72,8 @@
     "startZone": "Starten",
     "stopZone": "Stoppen",
     "isWatering": "Bewässert...",
-    "noValves": "Keine Ventile"
+    "noValves": "Keine Ventile",
+    "assignValvesHint": "Keine Ventile zugewiesen — gehe zu Ventile, um sie dieser Sektion zuzuweisen."
   },
   "valves": {
     "title": "Ventile",
@@ -105,6 +106,18 @@
       "weather": "Wetter"
     },
     "threshold": "Schwellenwert",
+    "typeDescs": {
+      "rain": "Binärer Sensor (z.B. Regensensor). Blockiert bei Zustand ON.",
+      "soil": "Bodenfeuchtesensor (%). Blockiert wenn Feuchtigkeit über Schwellenwert liegt.",
+      "flow": "Durchflussmesser (L/min). Blockiert Start bei unerwartetem Durchfluss ohne aktive Sektion.",
+      "temperature": "Temperatursensor (°C). Frostschutz: blockiert Bewässerung unter dem Schwellenwert.",
+      "weather": "HA Wetterentität. Blockiert bei Niederschlag laut Wetterzustand."
+    },
+    "thresholdDescs": {
+      "soil": "Bewässerung blockieren wenn Bodenfeuchte diesen Wert überschreitet.",
+      "flow": "Start blockieren wenn Durchfluss diesen Wert überschreitet ohne aktive Sektion (0 = beliebig).",
+      "temperature": "Bewässerung bei Frost blockieren (unter diesem Temperaturwert)."
+    },
     "blocking": "Blockiert Bewässerung",
     "notBlocking": "Bewässerung erlaubt",
     "currentValue": "Aktueller Wert"
@@ -116,6 +129,8 @@
     "deleteSchedule": "Zeitplan löschen",
     "deleteConfirm": "Möchten Sie diesen Zeitplan wirklich löschen?",
     "zone": "Sektion",
+    "zones": "Sektionen",
+    "multiZoneHint": "{{count}} Sektionen werden nacheinander ausgeführt.",
     "startTime": "Startzeit",
     "duration": "Dauer (min)",
     "durationOverride": "Dauer überschreiben",

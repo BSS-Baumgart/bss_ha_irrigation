@@ -40,6 +40,8 @@ export type WateringMode = 'sequential' | 'parallel'
 export interface Schedule {
   id: number
   zone_id: number
+  extra_zone_ids?: string    // comma-separated extra zone IDs
+  all_zone_ids?: number[]    // resolved list from backend
   zone_name?: string
   weekdays: number   // bitmask
   start_time: string // "HH:MM"
