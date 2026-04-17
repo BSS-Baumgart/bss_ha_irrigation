@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.0
+
+- Fixed: history timestamps are now displayed in local time (were incorrectly shown as UTC).
+- Fixed: entity picker in edit mode now shows the currently saved entity (valve / sensor).
+- Improved: section cards now display the list of assigned valves with a hint when none are assigned.
+- Improved: sensor skip logic now correctly uses per-schedule flags (skip_if_rain / skip_if_soil_wet / skip_if_frost).
+- Improved: flow meter and weather entity sensors now participate in watering skip evaluation.
+- Improved: sensor form now shows a description and threshold hint for each sensor type.
+- New: multi-zone sequential schedules — select multiple sections in one schedule entry and they will run one after another automatically.
+
 ## 1.3.4
 
 - Added CI validation workflow for frontend build on pull requests (develop and master).

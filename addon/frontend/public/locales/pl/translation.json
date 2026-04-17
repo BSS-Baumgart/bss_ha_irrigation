@@ -72,7 +72,8 @@
     "startZone": "Uruchom",
     "stopZone": "Zatrzymaj",
     "isWatering": "Podlewa...",
-    "noValves": "Brak zaworów"
+    "noValves": "Brak zaworów",
+    "assignValvesHint": "Brak przypisanych zaworów — przejdź do Zaworów, aby przypisać je do tej sekcji."
   },
   "valves": {
     "title": "Zawory",
@@ -105,6 +106,18 @@
       "weather": "Pogoda"
     },
     "threshold": "Próg",
+    "typeDescs": {
+      "rain": "Czujnik binarny (np. taca deszczowa). Blokuje podlewanie gdy stan to ON.",
+      "soil": "Czujnik wilgotności gleby (%). Blokuje podlewanie gdy wilgotność przekroczy próg.",
+      "flow": "Przepływomierz (L/min). Blokuje start gdy wykryje przepływ wody przy braku aktywnej sekcji.",
+      "temperature": "Czujnik temperatury (°C). Ochrona przed mrozem: blokuje podlewanie poniżej progu.",
+      "weather": "Encja pogodowa HA. Blokuje podlewanie gdy stan pogody wskazuje opady."
+    },
+    "thresholdDescs": {
+      "soil": "Blokuj podlewanie gdy wilgotność gleby przekracza tę wartość.",
+      "flow": "Blokuj start gdy przepływ przekracza tę wartość przy braku aktywnej sekcji (0 = jakikolwiek przepływ).",
+      "temperature": "Blokuj podlewanie gdy temperatura spada poniżej tej wartości (ochrona przed mrozem)."
+    },
     "blocking": "Blokuje podlewanie",
     "notBlocking": "Podlewanie dozwolone",
     "currentValue": "Aktualna wartość"
@@ -116,6 +129,8 @@
     "deleteSchedule": "Usuń harmonogram",
     "deleteConfirm": "Czy na pewno chcesz usunąć ten harmonogram?",
     "zone": "Sekcja",
+    "zones": "Sekcje",
+    "multiZoneHint": "{{count}} sekcje będą uruchomione sekwencyjnie jedna po drugiej.",
     "startTime": "Godzina startu",
     "duration": "Czas trwania (min)",
     "durationOverride": "Nadpisz czas trwania",
