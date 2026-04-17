@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1
+
+- Fixed: startup crash on existing installations after upgrade to v1.4.0 — missing `extra_zone_ids` column in the SQLite database is now added automatically via a migration on startup.
+- Fixed: removed deprecated `baseUrl` from frontend TypeScript configuration.
+
 ## 1.4.0
 
 - Fixed: history timestamps are now displayed in local time (were incorrectly shown as UTC).

@@ -1,5 +1,5 @@
 name: "Irrigation BSS"
-version: "1.4.0"
+version: "1.4.1"
 slug: "irrigation_bss"
 description: "Advanced irrigation management — zones, valves, sensors, scheduler"
 url: "https://github.com/BSS-Baumgart/bss_ha_irrigation"
