@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.2
+
+- Fixed: HA WebSocket "Cannot write to closing transport" error after Home Assistant restart — sends are now guarded by a connection-state flag that is only set after successful `auth_ok`.
+- Fixed: reconnect loop now retries indefinitely (every 5 s) until HA is back, instead of failing permanently on the first attempt after a restart.
+- Fixed: pending WebSocket futures are cancelled on disconnect to prevent hangs or stale callbacks.
+- Fixed: old aiohttp session is now properly closed before opening a new one on reconnect.
+
 ## 1.4.1
 
 - Fixed: startup crash on existing installations after upgrade to v1.4.0 — missing `extra_zone_ids` column in the SQLite database is now added automatically via a migration on startup.

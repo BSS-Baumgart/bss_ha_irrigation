@@ -57,10 +57,10 @@ export default function EntityPicker({ value, onChange, type = 'all', placeholde
           disabled && 'opacity-50 cursor-not-allowed'
         )}
       >
-        <span className={clsx('flex-1 truncate', !selected && 'text-gray-500')}>
+        <span className={clsx('flex-1 truncate', !selected && !value && 'text-gray-500')}>
           {selected
             ? <>{selected.friendly_name} <span className="text-gray-500 text-xs ml-1">{selected.entity_id}</span></>
-            : (placeholder || t('valves.selectEntity'))
+            : (value || placeholder || t('valves.selectEntity'))
           }
         </span>
         <div className="flex items-center gap-1 shrink-0">

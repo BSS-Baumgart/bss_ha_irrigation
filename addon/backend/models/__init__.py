@@ -4,6 +4,7 @@ from .sensor import Sensor, SensorCreate, SensorUpdate, SensorRead, SensorType
 from .schedule import Schedule, ScheduleCreate, ScheduleUpdate, ScheduleRead, WateringMode, schedule_zone_ids
 from .history import WateringLog, WateringLogRead, SkipReason, TriggerSource
 from .settings import AppSetting, SettingWrite
+from .runtime import ActiveWateringState
 
 __all__ = [
     "Zone", "ZoneCreate", "ZoneUpdate", "ZoneRead",
@@ -12,4 +13,5 @@ __all__ = [
     "Schedule", "ScheduleCreate", "ScheduleUpdate", "ScheduleRead", "WateringMode", "schedule_zone_ids",
     "WateringLog", "WateringLogRead", "SkipReason", "TriggerSource",
     "AppSetting", "SettingWrite",
+    "ActiveWateringState",
 ]

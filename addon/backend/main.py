@@ -47,16 +47,27 @@ async def lifespan(app: FastAPI):
     init_db()
 
     logger.info("Connecting to Home Assistant...")
+    ha_ready = False
     if settings.ha_token:
         try:
             await ha_client.connect()
             await ha_client.get_states()
+            ha_ready = True
         except Exception as e:
             logger.warning(f"HA connection failed: {e} — running in offline mode")
     else:
         logger.warning("No ha_token configured — HA features disabled")
 
     irrigation.set_ws_broadcast(broadcast)
+
+    if ha_ready:
+        try:
+            recovery = await irrigation.recover_active_watering()
+            logger.info(f"Runtime recovery: {recovery}")
+        except Exception as e:
+            logger.warning(f"Runtime recovery failed: {e}")
+    else:
+        logger.warning("Skipping runtime recovery — HA not ready")
 
     logger.info("Starting scheduler...")
     sched.start()
@@ -71,7 +82,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down...")
     ha_publisher.stop()
     sched.stop()
-    await irrigation.stop_all()
+    # Keep runtime state in DB so interrupted watering can be recovered on next startup.
 
 
 app = FastAPI(

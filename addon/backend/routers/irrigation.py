@@ -17,6 +17,7 @@ def get_status():
     return {
         "active_zones": irr.get_active_zones(),
         "any_watering": len(irr.get_active_zones()) > 0,
+        "runtime_status": irr.get_runtime_status(),
     }
 
 

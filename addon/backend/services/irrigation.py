@@ -1,19 +1,28 @@
 import asyncio
 import logging
-from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from datetime import datetime, timedelta, timezone
+from typing import Callable, Dict, List, Optional
 
 from sqlmodel import Session, select
 
-from backend.config import settings
 from backend.database.db import engine
-from backend.models import Zone, Valve, Sensor, WateringLog, SensorType, SkipReason, TriggerSource, AppSetting
+from backend.models import (
+    Zone,
+    Valve,
+    Sensor,
+    WateringLog,
+    SensorType,
+    SkipReason,
+    TriggerSource,
+    AppSetting,
+    ActiveWateringState,
+)
 from backend.services import ha_client
 
 logger = logging.getLogger(__name__)
 
 _active: Dict[int, dict] = {}
-_ws_broadcast: Optional[callable] = None
+_ws_broadcast: Optional[Callable] = None
 
 
 def set_ws_broadcast(fn):
@@ -53,6 +62,170 @@ def _get_main_valve_entity() -> Optional[str]:
     except Exception as e:
         logger.warning(f"Cannot read main valve setting: {e}")
         return None
+
+
+def _persist_active_state(zone_id: int, zone_name: str, valve_entities: List[str],
+                          started_at: datetime, duration_min: int, log_id: Optional[int]) -> None:
+    planned_end_at = started_at + timedelta(minutes=duration_min)
+    try:
+        with Session(engine) as session:
+            row = session.get(ActiveWateringState, zone_id)
+            if row:
+                row.zone_name = zone_name
+                row.valve_entities = ",".join(valve_entities)
+                row.started_at = started_at
+                row.planned_end_at = planned_end_at
+                row.duration_min = duration_min
+                row.log_id = log_id
+            else:
+                row = ActiveWateringState(
+                    zone_id=zone_id,
+                    zone_name=zone_name,
+                    valve_entities=",".join(valve_entities),
+                    started_at=started_at,
+                    planned_end_at=planned_end_at,
+                    duration_min=duration_min,
+                    log_id=log_id,
+                )
+            session.add(row)
+            session.commit()
+    except Exception as e:
+        logger.warning(f"Cannot persist active watering state for zone {zone_id}: {e}")
+
+
+def _delete_active_state(zone_id: int) -> None:
+    try:
+        with Session(engine) as session:
+            row = session.get(ActiveWateringState, zone_id)
+            if row:
+                session.delete(row)
+                session.commit()
+    except Exception as e:
+        logger.warning(f"Cannot delete active watering state for zone {zone_id}: {e}")
+
+
+def _list_persisted_active_states() -> List[ActiveWateringState]:
+    try:
+        with Session(engine) as session:
+            return session.exec(select(ActiveWateringState)).all()
+    except Exception as e:
+        logger.warning(f"Cannot read persisted active watering states: {e}")
+        return []
+
+
+async def _is_entity_on(entity_id: str) -> bool:
+    state = ha_client.get_cached_state(entity_id)
+    if state is None:
+        state = await ha_client.get_state(entity_id)
+    return bool(state and state.get("state") == "on")
+
+
+def get_runtime_status() -> dict:
+    persisted = _list_persisted_active_states()
+    return {
+        "active_in_memory": len(_active),
+        "persisted_active": len(persisted),
+        "active_zone_ids": sorted(list(_active.keys())),
+        "persisted_zone_ids": sorted([row.zone_id for row in persisted]),
+    }
+
+
+async def recover_active_watering() -> dict:
+    persisted = _list_persisted_active_states()
+    if not persisted:
+        return {"ok": True, "recovered": 0, "cleared": 0}
+
+    recovered = 0
+    cleared = 0
+    now = _utcnow()
+
+    for row in persisted:
+        started_at = _normalize_dt(row.started_at) or now
+        planned_end_at = _normalize_dt(row.planned_end_at) or (started_at + timedelta(minutes=row.duration_min))
+        remaining_sec = int((planned_end_at - now).total_seconds())
+        valve_entities = [e for e in (row.valve_entities or "").split(",") if e]
+
+        if not valve_entities:
+            _delete_active_state(row.zone_id)
+            _update_log(row.log_id, started_at, skipped=True, skip_reason=SkipReason.manual_stop)
+            cleared += 1
+            continue
+
+        if remaining_sec <= 0:
+            for entity_id in valve_entities:
+                try:
+                    if await _is_entity_on(entity_id):
+                        await ha_client.turn_off(entity_id)
+                except Exception as e:
+                    logger.warning(f"Valve turn_off failed during recovery cleanup ({entity_id}): {e}")
+            _delete_active_state(row.zone_id)
+            _update_log(row.log_id, started_at)
+            cleared += 1
+            continue
+
+        on_states: List[bool] = []
+        for entity_id in valve_entities:
+            try:
+                on_states.append(await _is_entity_on(entity_id))
+            except Exception as e:
+                logger.warning(f"Cannot read valve state during recovery ({entity_id}): {e}")
+                on_states.append(False)
+
+        if not any(on_states):
+            _delete_active_state(row.zone_id)
+            _update_log(row.log_id, started_at, skipped=True, skip_reason=SkipReason.manual_stop)
+            cleared += 1
+            continue
+
+        if len(_active) == 0:
+            main_valve = _get_main_valve_entity()
+            if main_valve:
+                try:
+                    if not await _is_entity_on(main_valve):
+                        await ha_client.turn_on(main_valve)
+                        logger.info(f"Main valve {main_valve} reopened during recovery")
+                except Exception as e:
+                    logger.warning(f"Main valve reopen failed ({main_valve}): {e}")
+
+        for idx, entity_id in enumerate(valve_entities):
+            if on_states[idx]:
+                continue
+            try:
+                await ha_client.turn_on(entity_id)
+                logger.info(f"Valve {entity_id} restored during recovery")
+            except Exception as e:
+                logger.warning(f"Valve restore failed ({entity_id}): {e}")
+
+        task = asyncio.create_task(
+            _auto_stop(
+                zone_id=row.zone_id,
+                duration_min=row.duration_min,
+                valve_entities=valve_entities,
+                log_id=row.log_id or 0,
+                sleep_seconds=remaining_sec,
+            )
+        )
+
+        _active[row.zone_id] = {
+            "task": task,
+            "started_at": started_at,
+            "duration_min": row.duration_min,
+            "zone_name": row.zone_name,
+            "log_id": row.log_id,
+            "valve_entities": valve_entities,
+        }
+
+        await _broadcast("zone_started", {
+            "zone_id": row.zone_id,
+            "zone_name": row.zone_name,
+            "duration_min": row.duration_min,
+            "active_zones": get_active_zones(),
+        })
+        recovered += 1
+
+    if recovered or cleared:
+        logger.info(f"Runtime recovery finished: recovered={recovered}, cleared={cleared}")
+    return {"ok": True, "recovered": recovered, "cleared": cleared}
 
 
 def is_watering(zone_id: int) -> bool:
@@ -235,7 +408,9 @@ async def start_zone(zone_id: int, duration_min: Optional[int] = None,
         "duration_min": duration,
         "zone_name": zone_name,
         "log_id": log_id,
+        "valve_entities": valve_entities,
     }
+    _persist_active_state(zone_id, zone_name, valve_entities, started_at, duration, log_id)
 
     await _broadcast("zone_started", {
         "zone_id": zone_id, "zone_name": zone_name, "duration_min": duration,
@@ -251,7 +426,7 @@ async def stop_zone(zone_id: int) -> dict:
 
     info = _active[zone_id]
     info["task"].cancel()
-    await _finish_zone(zone_id, info)
+    await _finish_zone(zone_id, info, reason="manual", skipped=True, skip_reason=SkipReason.manual_stop)
     return {"ok": True}
 
 
@@ -263,58 +438,40 @@ async def stop_all() -> dict:
     return {"ok": True, "stopped_zones": zone_ids}
 
 
-async def _auto_stop(zone_id: int, duration_min: int, valve_entities: List[str], log_id: int):
+async def _auto_stop(zone_id: int, duration_min: int, valve_entities: List[str], log_id: int,
+                     sleep_seconds: Optional[int] = None):
     try:
-        await asyncio.sleep(duration_min * 60)
-        for entity_id in valve_entities:
-            try:
-                await ha_client.turn_off(entity_id)
-            except Exception as e:
-                logger.warning(f"Valve turn_off failed ({entity_id}): {e}")
-        info = _active.pop(zone_id, {})
-        if len(_active) == 0:
-            main_valve = _get_main_valve_entity()
-            if main_valve:
-                try:
-                    await ha_client.turn_off(main_valve)
-                    logger.info(f"Main valve {main_valve} closed")
-                except Exception as e:
-                    logger.warning(f"Main valve close failed ({main_valve}): {e}")
-        _update_log(log_id, info.get("started_at"))
-        await _broadcast("zone_stopped", {"zone_id": zone_id, "reason": "completed", "active_zones": get_active_zones()})
+        await asyncio.sleep(sleep_seconds if sleep_seconds is not None else duration_min * 60)
+        info = _active.get(zone_id, {
+            "started_at": _utcnow() - timedelta(minutes=duration_min),
+            "duration_min": duration_min,
+            "zone_name": f"Zone {zone_id}",
+            "log_id": log_id,
+            "valve_entities": valve_entities,
+        })
+        await _finish_zone(zone_id, info, reason="completed")
         logger.info(f"Zone {zone_id} completed after {duration_min} min")
     except asyncio.CancelledError:
-        for entity_id in valve_entities:
-            try:
-                await ha_client.turn_off(entity_id)
-            except Exception as e:
-                logger.warning(f"Valve turn_off failed ({entity_id}): {e}")
-        info = _active.pop(zone_id, {})
-        if len(_active) == 0:
-            main_valve = _get_main_valve_entity()
-            if main_valve:
-                try:
-                    await ha_client.turn_off(main_valve)
-                    logger.info(f"Main valve {main_valve} closed")
-                except Exception as e:
-                    logger.warning(f"Main valve close failed ({main_valve}): {e}")
-        _update_log(log_id, info.get("started_at"), skipped=True, skip_reason=SkipReason.manual_stop)
-        await _broadcast("zone_stopped", {"zone_id": zone_id, "reason": "cancelled", "active_zones": get_active_zones()})
+        return
 
 
-async def _finish_zone(zone_id: int, info: dict):
-    with Session(engine) as session:
-        zone = session.get(Zone, zone_id)
-        if zone:
-            valves = session.exec(
-                select(Valve).where(Valve.zone_id == zone_id)
-            ).all()
-            for v in valves:
-                try:
-                    await ha_client.turn_off(v.entity_id)
-                except Exception as e:
-                    logger.warning(f"Valve turn_off failed ({v.entity_id}): {e}")
+async def _finish_zone(zone_id: int, info: dict, reason: str,
+                       skipped: bool = False, skip_reason: Optional[SkipReason] = None):
+    valve_entities = info.get("valve_entities") or []
+    if not valve_entities:
+        with Session(engine) as session:
+            valves = session.exec(select(Valve).where(Valve.zone_id == zone_id)).all()
+            valve_entities = [v.entity_id for v in valves]
+
+    for entity_id in valve_entities:
+        try:
+            await ha_client.turn_off(entity_id)
+        except Exception as e:
+            logger.warning(f"Valve turn_off failed ({entity_id}): {e}")
+
     _active.pop(zone_id, None)
+    _delete_active_state(zone_id)
+
     if len(_active) == 0:
         main_valve = _get_main_valve_entity()
         if main_valve:
@@ -323,8 +480,9 @@ async def _finish_zone(zone_id: int, info: dict):
                 logger.info(f"Main valve {main_valve} closed")
             except Exception as e:
                 logger.warning(f"Main valve close failed ({main_valve}): {e}")
-    _update_log(info.get("log_id"), info.get("started_at"))
-    await _broadcast("zone_stopped", {"zone_id": zone_id, "reason": "manual", "active_zones": get_active_zones()})
+
+    _update_log(info.get("log_id"), info.get("started_at"), skipped=skipped, skip_reason=skip_reason)
+    await _broadcast("zone_stopped", {"zone_id": zone_id, "reason": reason, "active_zones": get_active_zones()})
 
 
 def _update_log(log_id: int, started_at: Optional[datetime], skipped: bool = False,

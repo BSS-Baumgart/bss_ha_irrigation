@@ -14,6 +14,7 @@ _msg_id = 0
 _pending: Dict[int, asyncio.Future] = {}
 _state_listeners: List[Callable] = []
 _states: Dict[str, Any] = {}
+_is_connected: bool = False
 
 
 def _next_id() -> int:
@@ -22,8 +23,18 @@ def _next_id() -> int:
     return _msg_id
 
 
+def is_connected() -> bool:
+    return _is_connected and _ws is not None and not _ws.closed
+
+
 async def connect():
-    global _ws, _session
+    global _ws, _session, _is_connected
+    _is_connected = False
+    if _session and not _session.closed:
+        try:
+            await _session.close()
+        except Exception:
+            pass
     _session = aiohttp.ClientSession()
     ws_url = settings.ha_url.replace("http", "ws") + "/api/websocket"
     _ws = await _session.ws_connect(ws_url)
@@ -32,19 +43,41 @@ async def connect():
 
 
 async def _receive_loop():
-    global _ws
-    async for msg in _ws:
-        if msg.type == aiohttp.WSMsgType.TEXT:
-            data = json.loads(msg.data)
-            await _handle_message(data)
-        elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR):
-            logger.warning("HA WebSocket closed, reconnecting in 5s...")
-            await asyncio.sleep(5)
+    global _is_connected
+    try:
+        async for msg in _ws:
+            if msg.type == aiohttp.WSMsgType.TEXT:
+                data = json.loads(msg.data)
+                await _handle_message(data)
+            elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.ERROR):
+                logger.warning("HA WebSocket closed/error")
+                break
+    except Exception as e:
+        logger.warning(f"HA WebSocket receive error: {e}")
+    finally:
+        _is_connected = False
+        _cancel_pending()
+
+    # Reconnect loop — retry until successful
+    while True:
+        logger.warning("HA WebSocket disconnected, reconnecting in 5s...")
+        await asyncio.sleep(5)
+        try:
             await connect()
-            break
+            return
+        except Exception as e:
+            logger.warning(f"HA WebSocket reconnect failed: {e}, retrying...")
+
+
+def _cancel_pending():
+    for fut in list(_pending.values()):
+        if not fut.done():
+            fut.cancel()
+    _pending.clear()
 
 
 async def _handle_message(data: dict):
+    global _is_connected
     msg_type = data.get("type")
 
     if msg_type == "auth_required":
@@ -52,6 +85,7 @@ async def _handle_message(data: dict):
 
     elif msg_type == "auth_ok":
         logger.info("HA auth OK — subscribing to state changes")
+        _is_connected = True
         await _subscribe_states()
 
     elif msg_type == "auth_invalid":
@@ -85,12 +119,20 @@ async def _subscribe_states():
 
 
 async def _send(payload: dict) -> dict:
+    if not is_connected():
+        raise RuntimeError("Not connected to Home Assistant WebSocket")
     msg_id = _next_id()
     payload["id"] = msg_id
     loop = asyncio.get_event_loop()
     future = loop.create_future()
     _pending[msg_id] = future
-    await _ws.send_json(payload)
+    try:
+        await _ws.send_json(payload)
+    except Exception as e:
+        _pending.pop(msg_id, None)
+        if not future.done():
+            future.cancel()
+        raise RuntimeError(f"Cannot send to Home Assistant: {e}") from e
     return await asyncio.wait_for(future, timeout=10.0)
 
 
