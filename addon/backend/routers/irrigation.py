@@ -10,6 +10,7 @@ router = APIRouter(prefix="/api/irrigation", tags=["irrigation"])
 
 class StartRequest(BaseModel):
     duration_min: Optional[int] = None
+    force: bool = False   # bypass sensor checks when True
 
 
 @router.get("/status")
@@ -27,6 +28,7 @@ async def start_zone(zone_id: int, body: StartRequest = StartRequest()):
         zone_id=zone_id,
         duration_min=body.duration_min,
         triggered_by=TriggerSource.manual,
+        skip_sensor_check=body.force,
     )
     if not result.get("ok") and not result.get("skipped"):
         raise HTTPException(400, result.get("error", "Cannot start zone"))

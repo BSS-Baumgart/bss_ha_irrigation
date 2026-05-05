@@ -56,6 +56,7 @@
     "manualStart": "Manueller Start",
     "quickStart": "Schnellstart",
     "wateringBlocked": "Bewässerung durch Sensoren blockiert:",
+    "forceStart": "Erzwungener Start (Sensorblockaden ignorieren)",
     "remaining": "verbleibend",
     "noZones": "Keine Sektionen konfiguriert."
   },
@@ -89,7 +90,9 @@
     "turnOn": "Einschalten",
     "turnOff": "Ausschalten",
     "mainValve": "Hauptventil",
-    "mainValveDesc": "Öffnet automatisch vor der ersten Sektion und schließt nach der letzten."
+    "mainValveDesc": "Öffnet automatisch vor der ersten Sektion und schließt nach der letzten.",
+    "pump": "Pumpe",
+    "pumpDesc": "Brunnenpumpe oder Förderpumpe — startet automatisch mit der ersten Sektion und stoppt nach der letzten."
   },
   "sensors": {
     "title": "Sensoren",
@@ -194,11 +197,25 @@
       "rain": "Regen",
       "soil_wet": "Feuchter Boden",
       "frost": "Frost",
+      "flow_detected": "Unerwarteter Durchfluss",
       "manual_stop": "Manueller Stopp",
       "ha_unavailable": "HA nicht verfügbar"
     },
     "waterUsed": "Wasserverbrauch",
     "clearHistory": "Verlauf löschen",
     "clearConfirm": "Möchten Sie den Bewässerungsverlauf wirklich löschen?"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "language": "Sprache",
+    "colorTheme": "Farbschema",
+    "colorThemeDesc": "Passen Sie die 6 Hauptfarben der Oberfläche an. Geben Sie einen Hex-Wert (#rrggbb) ein oder verwenden Sie den Farbwähler.",
+    "colorPrimary": "Primär (Akzent, Schaltflächen)",
+    "colorPrimaryDark": "Primär dunkel (Hover)",
+    "colorBg": "Hintergrund",
+    "colorSurface": "Oberfläche (Karten)",
+    "colorBorder": "Rahmen",
+    "colorTextSecondary": "Sekundärer Text",
+    "resetColors": "Auf Standard zurücksetzen"
   }
 }

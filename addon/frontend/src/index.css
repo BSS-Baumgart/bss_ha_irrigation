@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --theme-primary: #22c55e;
+  --theme-primary-dark: #16a34a;
+  --theme-bg: #030712;
+  --theme-surface: #111827;
+  --theme-border: #1f2937;
+  --theme-text-secondary: #9ca3af;
+}
+
 @layer base {
   body {
     @apply bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans;
@@ -15,6 +24,26 @@
   ::-webkit-scrollbar-thumb {
     @apply bg-gray-400 dark:bg-gray-700 rounded-full;
   }
+}
+
+/* Theme color overrides — applied when CSS vars are set via Settings */
+.dark .btn-primary {
+  background-color: var(--theme-primary-dark);
+}
+.dark .btn-primary:hover {
+  background-color: var(--theme-primary);
+}
+.dark body {
+  background-color: var(--theme-bg);
+}
+.dark .card,
+.dark [class*="bg-gray-900"] {
+  background-color: var(--theme-surface);
+  border-color: var(--theme-border);
+}
+.dark [class*="border-gray-800"],
+.dark [class*="border-gray-700"] {
+  border-color: var(--theme-border);
 }
 
 @layer components {

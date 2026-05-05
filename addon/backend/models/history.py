@@ -9,6 +9,7 @@ class SkipReason(str, Enum):
     rain = "rain"
     soil_wet = "soil_wet"
     frost = "frost"
+    flow_detected = "flow_detected"
     manual_stop = "manual_stop"
     ha_unavailable = "ha_unavailable"
 

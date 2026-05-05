@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard, Layers, Zap, Radio, CalendarDays,
-  Cloud, History, Sun, Moon, X,
+  Cloud, History, Sun, Moon, X, Settings,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useIrrigationStore } from '../../store/irrigationStore'
@@ -15,6 +15,7 @@ const navItems = [
   { to: '/schedule',  icon: CalendarDays,    label: 'nav.schedule' },
   { to: '/weather',   icon: Cloud,           label: 'nav.weather' },
   { to: '/history',   icon: History,         label: 'nav.history' },
+  { to: '/settings',  icon: Settings,        label: 'nav.settings' },
 ]
 
 export default function Sidebar() {

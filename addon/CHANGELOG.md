@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.3
+
+- Fixed: Flow meter sensor now correctly reports "Unexpected flow" (instead of "Wet soil") in irrigation history.
+- Fixed: Safety sweep — all zone valves are explicitly closed when the last active zone finishes (prevents stuck-open valves).
+- Fixed: Manual start now supports a "Force start" option to bypass active sensor blocks (soil, rain, frost, flow).
+- New: Pump control — configure a pump entity (e.g. well pump) that starts automatically with the first section and stops after the last, mirroring main valve behaviour.
+- New: Settings page — language selector (EN/PL/DE) and 6 customisable interface colours (hex input + colour picker), all persisted to the database.
+
 ## 1.4.2
 
 - Fixed: HA WebSocket "Cannot write to closing transport" error after Home Assistant restart — sends are now guarded by a connection-state flag that is only set after successful `auth_ok`.
