@@ -216,6 +216,11 @@
     "colorSurface": "Surface (cards)",
     "colorBorder": "Border",
     "colorTextSecondary": "Secondary text",
-    "resetColors": "Reset to defaults"
+    "resetColors": "Reset to defaults",
+    "colorPresets": "Presets",
+    "presetDefault": "Default (Green)",
+    "presetOcean": "Ocean (Blue)",
+    "presetSunset": "Sunset (Orange)",
+    "presetViolet": "Violet"
   }
 }

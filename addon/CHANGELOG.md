@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.4
+
+- Fixed: Color theme settings now correctly update the UI in real-time — all background, surface, border, button, badge, and accent elements respond to custom colour changes.
+- Changed: Removed the dark/light mode toggle from the sidebar — the app always uses dark mode; colours are customised via Settings.
+- New: 4 preset colour palettes in Settings: Default (Green), Ocean (Blue), Sunset (Orange), Violet — one click applies and saves all 6 colours instantly.
+
 ## 1.4.3
 
 - Fixed: Flow meter sensor now correctly reports "Unexpected flow" (instead of "Wet soil") in irrigation history.

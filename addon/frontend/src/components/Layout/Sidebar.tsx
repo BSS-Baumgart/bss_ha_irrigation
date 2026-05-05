@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   LayoutDashboard, Layers, Zap, Radio, CalendarDays,
-  Cloud, History, Sun, Moon, X, Settings,
+  Cloud, History, X, Settings,
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useIrrigationStore } from '../../store/irrigationStore'
@@ -20,7 +20,7 @@ const navItems = [
 
 export default function Sidebar() {
   const { t } = useTranslation()
-  const { theme, toggleTheme, closeSidebar } = useIrrigationStore()
+  const { closeSidebar } = useIrrigationStore()
 
   return (
     <aside className="w-56 h-full flex flex-col bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
@@ -58,16 +58,6 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
-
-      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800">
-        <button
-          onClick={toggleTheme}
-          className="w-full flex items-center justify-center gap-2 text-xs py-1.5 rounded font-medium text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        >
-          {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
-          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-        </button>
-      </div>
     </aside>
   )
 }

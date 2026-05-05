@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Settings, Palette, Globe, RotateCcw } from 'lucide-react'
 import { settingsApi } from '../api/settings'
@@ -19,12 +19,39 @@ interface ColorField {
 }
 
 const COLOR_FIELDS: ColorField[] = [
-  { key: 'primary',       settingKey: 'theme_color_primary',            labelKey: 'settings.colorPrimary' },
-  { key: 'primaryDark',   settingKey: 'theme_color_primary_dark',       labelKey: 'settings.colorPrimaryDark' },
-  { key: 'bg',            settingKey: 'theme_color_bg',                 labelKey: 'settings.colorBg' },
-  { key: 'surface',       settingKey: 'theme_color_surface',            labelKey: 'settings.colorSurface' },
-  { key: 'border',        settingKey: 'theme_color_border',             labelKey: 'settings.colorBorder' },
-  { key: 'textSecondary', settingKey: 'theme_color_text_secondary',     labelKey: 'settings.colorTextSecondary' },
+  { key: 'primary',       settingKey: 'theme_color_primary',        labelKey: 'settings.colorPrimary' },
+  { key: 'primaryDark',   settingKey: 'theme_color_primary_dark',   labelKey: 'settings.colorPrimaryDark' },
+  { key: 'bg',            settingKey: 'theme_color_bg',             labelKey: 'settings.colorBg' },
+  { key: 'surface',       settingKey: 'theme_color_surface',        labelKey: 'settings.colorSurface' },
+  { key: 'border',        settingKey: 'theme_color_border',         labelKey: 'settings.colorBorder' },
+  { key: 'textSecondary', settingKey: 'theme_color_text_secondary', labelKey: 'settings.colorTextSecondary' },
+]
+
+const PRESETS: { key: string; nameKey: string; swatches: string[]; colors: ThemeColors }[] = [
+  {
+    key: 'default',
+    nameKey: 'settings.presetDefault',
+    swatches: ['#22c55e', '#030712', '#111827'],
+    colors: DEFAULT_COLORS,
+  },
+  {
+    key: 'ocean',
+    nameKey: 'settings.presetOcean',
+    swatches: ['#3b82f6', '#020817', '#0f172a'],
+    colors: { primary: '#3b82f6', primaryDark: '#2563eb', bg: '#020817', surface: '#0f172a', border: '#1e3a5f', textSecondary: '#94a3b8' },
+  },
+  {
+    key: 'sunset',
+    nameKey: 'settings.presetSunset',
+    swatches: ['#f97316', '#09090b', '#18181b'],
+    colors: { primary: '#f97316', primaryDark: '#ea580c', bg: '#09090b', surface: '#18181b', border: '#27272a', textSecondary: '#a1a1aa' },
+  },
+  {
+    key: 'violet',
+    nameKey: 'settings.presetViolet',
+    swatches: ['#a855f7', '#0b0014', '#170b24'],
+    colors: { primary: '#a855f7', primaryDark: '#9333ea', bg: '#0b0014', surface: '#170b24', border: '#3b1d6e', textSecondary: '#c084fc' },
+  },
 ]
 
 function isValidHex(v: string): boolean {
@@ -80,21 +107,33 @@ export default function SettingsPage() {
   }
 
   const saveColors = async () => {
+    const snap = { ...colors }
+    setThemeColors(snap)
     await Promise.all(
-      COLOR_FIELDS.map(f => settingsApi.set(f.settingKey, colors[f.key]))
+      COLOR_FIELDS.map(f => settingsApi.set(f.settingKey, snap[f.key]))
     )
     showSaved()
   }
 
+  const applyPreset = async (preset: typeof PRESETS[0]) => {
+    const c = { ...preset.colors }
+    setColors(c)
+    const inputs: Record<string, string> = {}
+    COLOR_FIELDS.forEach(f => { inputs[f.key] = c[f.key as keyof ThemeColors] })
+    setHexInputs(inputs)
+    setThemeColors(c)
+    await Promise.all(COLOR_FIELDS.map(f => settingsApi.set(f.settingKey, c[f.key as keyof ThemeColors])))
+    showSaved()
+  }
+
   const resetColors = async () => {
-    setColors({ ...DEFAULT_COLORS })
+    const c = { ...DEFAULT_COLORS }
+    setColors(c)
     const inputs: Record<string, string> = {}
     COLOR_FIELDS.forEach(f => { inputs[f.key] = DEFAULT_COLORS[f.key] })
     setHexInputs(inputs)
-    setThemeColors({ ...DEFAULT_COLORS })
-    await Promise.all(
-      COLOR_FIELDS.map(f => settingsApi.set(f.settingKey, DEFAULT_COLORS[f.key]))
-    )
+    setThemeColors(c)
+    await Promise.all(COLOR_FIELDS.map(f => settingsApi.set(f.settingKey, DEFAULT_COLORS[f.key])))
     showSaved()
   }
 
@@ -157,6 +196,25 @@ export default function SettingsPage() {
 
         <p className="text-xs text-gray-500">{t('settings.colorThemeDesc')}</p>
 
+        {/* Presets */}
+        <div className="space-y-1.5">
+          <label className="label">{t('settings.colorPresets')}</label>
+          <div className="flex flex-wrap gap-2">
+            {PRESETS.map(p => (
+              <button
+                key={p.key}
+                onClick={() => applyPreset(p)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-700 hover:border-gray-400 bg-gray-800/50 hover:bg-gray-700/50 text-sm text-gray-300 transition-colors"
+              >
+                {p.swatches.map((s, i) => (
+                  <span key={i} className="w-3 h-3 rounded-full shrink-0 border border-white/10" style={{ backgroundColor: s }} />
+                ))}
+                <span>{t(p.nameKey)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {COLOR_FIELDS.map(field => (
             <div key={field.key} className="space-y-1">
@@ -175,7 +233,7 @@ export default function SettingsPage() {
                   placeholder="#rrggbb"
                   maxLength={7}
                   className={`input text-sm font-mono ${
-                    isValidHex(hexInputs[field.key] ?? '') ? '' : 'border-red-600'
+                    !hexInputs[field.key] || isValidHex(hexInputs[field.key]) ? '' : 'border-red-600'
                   }`}
                 />
                 <div
