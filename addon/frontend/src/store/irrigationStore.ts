@@ -45,34 +45,6 @@ export function applyThemeColors(colors: Partial<ThemeColors>) {
   root.style.setProperty('--theme-primary-a20', hexToRgba(full.primary, 0.20))
 }
 
-export interface ThemeColors {
-  primary: string
-  primaryDark: string
-  bg: string
-  surface: string
-  border: string
-  textSecondary: string
-}
-
-export const DEFAULT_COLORS: ThemeColors = {
-  primary: '#22c55e',
-  primaryDark: '#16a34a',
-  bg: '#030712',
-  surface: '#111827',
-  border: '#1f2937',
-  textSecondary: '#9ca3af',
-}
-
-export function applyThemeColors(colors: Partial<ThemeColors>) {
-  const root = document.documentElement
-  if (colors.primary) root.style.setProperty('--theme-primary', colors.primary)
-  if (colors.primaryDark) root.style.setProperty('--theme-primary-dark', colors.primaryDark)
-  if (colors.bg) root.style.setProperty('--theme-bg', colors.bg)
-  if (colors.surface) root.style.setProperty('--theme-surface', colors.surface)
-  if (colors.border) root.style.setProperty('--theme-border', colors.border)
-  if (colors.textSecondary) root.style.setProperty('--theme-text-secondary', colors.textSecondary)
-}
-
 interface IrrigationStore {
   activeZones: ActiveZone[]
   anyWatering: boolean
