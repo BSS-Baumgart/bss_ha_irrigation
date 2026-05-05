@@ -56,6 +56,7 @@
     "manualStart": "Ręczny start",
     "quickStart": "Szybki start",
     "wateringBlocked": "Podlewanie zablokowane przez czujniki:",
+    "forceStart": "Wymuś start (ignoruj blokady czujników)",
     "remaining": "pozostało",
     "noZones": "Brak skonfigurowanych sekcji."
   },
@@ -89,7 +90,9 @@
     "turnOn": "Włącz",
     "turnOff": "Wyłącz",
     "mainValve": "Zawór główny",
-    "mainValveDesc": "Otwiera się automatycznie przed uruchomieniem pierwszej sekcji i zamyka po zatrzymaniu ostatniej."
+    "mainValveDesc": "Otwiera się automatycznie przed uruchomieniem pierwszej sekcji i zamyka po zatrzymaniu ostatniej.",
+    "pump": "Pompa",
+    "pumpDesc": "Pompa ze studni lub pompa wspomagająca — uruchamia się automatycznie przed pierwszą sekcją i zatrzymuje po ostatniej."
   },
   "sensors": {
     "title": "Czujniki",
@@ -194,11 +197,25 @@
       "rain": "Deszcz",
       "soil_wet": "Mokra gleba",
       "frost": "Mróz",
+      "flow_detected": "Nieoczekiwany przepływ",
       "manual_stop": "Ręczne zatrzymanie",
       "ha_unavailable": "HA niedostępne"
     },
     "waterUsed": "Zużycie wody",
     "clearHistory": "Wyczyść historię",
     "clearConfirm": "Czy na pewno chcesz wyczyścić historię podlewania?"
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "language": "Język",
+    "colorTheme": "Motyw kolorystyczny",
+    "colorThemeDesc": "Dostosuj 6 głównych kolorów interfejsu. Wpisz wartość hex (#rrggbb) lub użyj próbnika kolorów.",
+    "colorPrimary": "Główny (akcent, przyciski)",
+    "colorPrimaryDark": "Główny ciemny (hover)",
+    "colorBg": "Tło",
+    "colorSurface": "Powierzchnia (karty)",
+    "colorBorder": "Obramowanie",
+    "colorTextSecondary": "Tekst drugorzędny",
+    "resetColors": "Przywróć domyślne"
   }
 }

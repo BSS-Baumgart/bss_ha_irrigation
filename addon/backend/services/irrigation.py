@@ -64,6 +64,16 @@ def _get_main_valve_entity() -> Optional[str]:
         return None
 
 
+def _get_pump_entity() -> Optional[str]:
+    try:
+        with Session(engine) as session:
+            row = session.get(AppSetting, "pump_entity_id")
+            return row.value if row and row.value else None
+    except Exception as e:
+        logger.warning(f"Cannot read pump setting: {e}")
+        return None
+
+
 def _persist_active_state(zone_id: int, zone_name: str, valve_entities: List[str],
                           started_at: datetime, duration_min: int, log_id: Optional[int]) -> None:
     planned_end_at = started_at + timedelta(minutes=duration_min)
@@ -186,6 +196,15 @@ async def recover_active_watering() -> dict:
                         logger.info(f"Main valve {main_valve} reopened during recovery")
                 except Exception as e:
                     logger.warning(f"Main valve reopen failed ({main_valve}): {e}")
+
+            pump_valve = _get_pump_entity()
+            if pump_valve:
+                try:
+                    if not await _is_entity_on(pump_valve):
+                        await ha_client.turn_on(pump_valve)
+                        logger.info(f"Pump {pump_valve} restarted during recovery")
+                except Exception as e:
+                    logger.warning(f"Pump restart failed ({pump_valve}): {e}")
 
         for idx, entity_id in enumerate(valve_entities):
             if on_states[idx]:
@@ -317,7 +336,7 @@ async def check_sensors_blocking(
                             f"Sensor block: flow meter {sensor.entity_id} = {val} L/min "
                             f"(unexpected flow while idle, threshold={threshold})"
                         )
-                        return SkipReason.soil_wet  # reuse closest reason; frontend shows it
+                        return SkipReason.flow_detected
                 except (ValueError, TypeError):
                     pass
 
@@ -376,6 +395,14 @@ async def start_zone(zone_id: int, duration_min: Optional[int] = None,
                 logger.info(f"Main valve {main_valve} opened")
             except Exception as e:
                 logger.warning(f"Main valve open failed ({main_valve}): {e}")
+
+        pump_valve = _get_pump_entity()
+        if pump_valve:
+            try:
+                await ha_client.turn_on(pump_valve)
+                logger.info(f"Pump {pump_valve} started")
+            except Exception as e:
+                logger.warning(f"Pump start failed ({pump_valve}): {e}")
 
     for entity_id in valve_entities:
         try:
@@ -480,6 +507,27 @@ async def _finish_zone(zone_id: int, info: dict, reason: str,
                 logger.info(f"Main valve {main_valve} closed")
             except Exception as e:
                 logger.warning(f"Main valve close failed ({main_valve}): {e}")
+
+        pump_valve = _get_pump_entity()
+        if pump_valve:
+            try:
+                await ha_client.turn_off(pump_valve)
+                logger.info(f"Pump {pump_valve} closed")
+            except Exception as e:
+                logger.warning(f"Pump close failed ({pump_valve}): {e}")
+
+        # Safety sweep: close all zone valves in DB to guard against any stuck valve
+        try:
+            with Session(engine) as session:
+                all_valves = session.exec(select(Valve).where(Valve.enabled == True)).all()
+            for v in all_valves:
+                try:
+                    await ha_client.turn_off(v.entity_id)
+                except Exception:
+                    pass
+            logger.info("Safety sweep: all zone valves closed")
+        except Exception as e:
+            logger.warning(f"Safety sweep failed: {e}")
 
     _update_log(info.get("log_id"), info.get("started_at"), skipped=skipped, skip_reason=skip_reason)
     await _broadcast("zone_stopped", {"zone_id": zone_id, "reason": reason, "active_zones": get_active_zones()})

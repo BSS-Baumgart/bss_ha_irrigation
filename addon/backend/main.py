@@ -138,7 +138,19 @@ def health():
 
 @app.get("/api/config")
 def get_config():
-    return {"language": settings.default_language}
+    # DB language override takes precedence over addon env var
+    lang = settings.default_language
+    try:
+        from sqlmodel import Session, select
+        from backend.models import AppSetting
+        from backend.database.db import engine
+        with Session(engine) as session:
+            row = session.get(AppSetting, "app_language")
+            if row and row.value:
+                lang = row.value
+    except Exception:
+        pass
+    return {"language": lang}
 
 
 static_dir = settings.static_dir

@@ -39,6 +39,7 @@ export default function DashboardPage() {
   const [quickDuration, setQuickDuration] = useState<number>(15)
   const [startModalZone, setStartModalZone] = useState<Zone | null>(null)
   const [startModalDuration, setStartModalDuration] = useState<number>(15)
+  const [startModalForce, setStartModalForce] = useState<boolean>(false)
 
   useEffect(() => {
     zonesApi.list().then(setZones).catch(() => {})
@@ -72,14 +73,14 @@ export default function DashboardPage() {
     return formatNextRun(sorted[0].next_run)
   }
 
-  const startZoneWithDuration = async (zoneId: number, durationMin: number, closeModal = false) => {
+  const startZoneWithDuration = async (zoneId: number, durationMin: number, closeModal = false, force = false) => {
     setStartingZone(zoneId)
     try {
-      await irrigationApi.start(zoneId, durationMin)
+      await irrigationApi.start(zoneId, durationMin, force)
     } catch {}
     finally {
       setStartingZone(null)
-      if (closeModal) setStartModalZone(null)
+      if (closeModal) { setStartModalZone(null); setStartModalForce(false) }
     }
   }
 
@@ -91,11 +92,12 @@ export default function DashboardPage() {
   const openStartModal = (zone: Zone) => {
     setStartModalZone(zone)
     setStartModalDuration(zone.duration_min)
+    setStartModalForce(false)
   }
 
   const handleStartFromModal = async () => {
     if (!startModalZone) return
-    await startZoneWithDuration(startModalZone.id, startModalDuration, true)
+    await startZoneWithDuration(startModalZone.id, startModalDuration, true, startModalForce)
   }
 
   const handleStop = async (zoneId: number) => {
@@ -304,6 +306,16 @@ export default function DashboardPage() {
               onChange={(e) => setStartModalDuration(Number(e.target.value))}
             />
           </div>
+          {blockingSensors.length > 0 && (
+            <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg px-3 py-2">
+              <p className="text-yellow-400 text-xs mb-2">⚠️ {t('dashboard.wateringBlocked')}</p>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="modal-force" checked={startModalForce}
+                  onChange={e => setStartModalForce(e.target.checked)} className="w-4 h-4 accent-primary-500" />
+                <label htmlFor="modal-force" className="text-sm text-gray-300">{t('dashboard.forceStart')}</label>
+              </div>
+            </div>
+          )}
           <div className="flex gap-3 justify-end border-t border-gray-200 dark:border-gray-800 pt-3">
             <button onClick={() => setStartModalZone(null)} className="btn-secondary btn-sm">{t('common.cancel')}</button>
             <button

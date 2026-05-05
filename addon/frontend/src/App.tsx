@@ -8,6 +8,7 @@ import SensorsPage from './pages/SensorsPage'
 import SchedulePage from './pages/SchedulePage'
 import WeatherPage from './pages/WeatherPage'
 import HistoryPage from './pages/HistoryPage'
+import SettingsPage from './pages/SettingsPage'
 import { useWebSocket } from './hooks/useWebSocket'
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/weather" element={<WeatherPage />} />
           <Route path="/history" element={<HistoryPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </AppLayout>

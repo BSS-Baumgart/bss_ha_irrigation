@@ -56,6 +56,7 @@
     "manualStart": "Manual start",
     "quickStart": "Quick start",
     "wateringBlocked": "Watering blocked by sensors:",
+    "forceStart": "Force start (ignore sensor blocks)",
     "remaining": "remaining",
     "noZones": "No sections configured yet."
   },
@@ -89,7 +90,9 @@
     "turnOn": "Turn on",
     "turnOff": "Turn off",
     "mainValve": "Main valve",
-    "mainValveDesc": "Opens automatically before the first section starts and closes after the last section stops."
+    "mainValveDesc": "Opens automatically before the first section starts and closes after the last section stops.",
+    "pump": "Pump",
+    "pumpDesc": "Well pump or booster pump — starts automatically when first section starts and stops after the last stops."
   },
   "sensors": {
     "title": "Sensors",
@@ -194,11 +197,25 @@
       "rain": "Rain",
       "soil_wet": "Wet soil",
       "frost": "Frost",
+      "flow_detected": "Unexpected flow",
       "manual_stop": "Manual stop",
       "ha_unavailable": "HA unavailable"
     },
     "waterUsed": "Water used",
     "clearHistory": "Clear history",
     "clearConfirm": "Are you sure you want to clear watering history?"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "colorTheme": "Color theme",
+    "colorThemeDesc": "Customize the 6 main colors of the interface. Enter a hex value (#rrggbb) or use the color picker.",
+    "colorPrimary": "Primary (accent, buttons)",
+    "colorPrimaryDark": "Primary dark (hover)",
+    "colorBg": "Background",
+    "colorSurface": "Surface (cards)",
+    "colorBorder": "Border",
+    "colorTextSecondary": "Secondary text",
+    "resetColors": "Reset to defaults"
   }
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Pencil, Trash2, Zap, ToggleLeft, ToggleRight, ShieldCheck } from 'lucide-react'
+import { Plus, Pencil, Trash2, Zap, ToggleLeft, ToggleRight, ShieldCheck, Waves } from 'lucide-react'
 import { valvesApi } from '../api/valves'
 import { haEntitiesApi } from '../api/weather'
 import { settingsApi } from '../api/settings'
@@ -167,6 +167,58 @@ function MainValveSection({ t }: { t: (k: string) => string }) {
   )
 }
 
+function PumpSection({ t }: { t: (k: string) => string }) {
+  const [entity, setEntity] = useState('')
+  const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    settingsApi.getAll().then(cfg => {
+      setEntity(typeof cfg['pump_entity_id'] === 'string' ? cfg['pump_entity_id'] : '')
+    }).catch(() => {})
+  }, [])
+
+  const save = async () => {
+    setSaving(true)
+    setError('')
+    setSaved(false)
+    try {
+      const result = await settingsApi.set('pump_entity_id', entity || null)
+      setEntity(typeof result?.value === 'string' ? result.value : '')
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="card border-blue-700/40 max-w-4xl">
+      <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <Waves size={16} className="text-blue-400" />
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">{t('valves.pump')}</span>
+          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{t('valves.pumpDesc')}</p>
+        </div>
+        <div className="flex gap-2 w-full lg:w-[460px]">
+          <div className="flex-1">
+            <EntityPicker value={entity} onChange={setEntity} type="valves" />
+          </div>
+          <button onClick={save} disabled={saving} className="btn-primary btn-sm shrink-0 min-w-[88px] disabled:opacity-60">
+            {saved ? 'OK' : t('common.save')}
+          </button>
+        </div>
+      </div>
+      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+    </div>
+  )
+}
+
 export default function ValvesPage() {
   const { t } = useTranslation()
   const [valves, setValves] = useState<Valve[]>([])
@@ -221,6 +273,7 @@ export default function ValvesPage() {
       </div>
 
       <MainValveSection t={t} />
+      <PumpSection t={t} />
       {loading ? <p className="text-gray-500 text-sm">{t('common.loading')}</p>
       : valves.length === 0 ? (
         <div className="card text-center py-14 text-gray-600">

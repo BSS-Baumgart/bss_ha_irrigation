@@ -2,13 +2,18 @@ import { useEffect, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import Sidebar from './Sidebar'
 import HeaderBar from './HeaderBar'
-import { useIrrigationStore } from '../../store/irrigationStore'
+import { useIrrigationStore, applyThemeColors, DEFAULT_COLORS, type ThemeColors } from '../../store/irrigationStore'
 import { INGRESS_BASE } from '../../lib/ingressBase'
+import { settingsApi } from '../../api/settings'
+
+const COLOR_KEYS: (keyof ThemeColors)[] = ['primary', 'primaryDark', 'bg', 'surface', 'border', 'textSecondary']
+const SETTING_KEYS = ['theme_color_primary', 'theme_color_primary_dark', 'theme_color_bg', 'theme_color_surface', 'theme_color_border', 'theme_color_text_secondary']
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const theme = useIrrigationStore(s => s.theme)
   const sidebarOpen = useIrrigationStore(s => s.sidebarOpen)
   const closeSidebar = useIrrigationStore(s => s.closeSidebar)
+  const setThemeColors = useIrrigationStore(s => s.setThemeColors)
   const { i18n } = useTranslation()
 
   useEffect(() => {
@@ -16,16 +21,28 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }, [theme])
 
   useEffect(() => {
-    localStorage.removeItem('irrigation-lang-override')
     fetch(`${INGRESS_BASE}/api/config`)
       .then(r => r.json())
       .then(cfg => {
-        if (cfg.language) {
-          i18n.changeLanguage(cfg.language)
-        }
+        if (cfg.language) i18n.changeLanguage(cfg.language)
       })
       .catch(() => {})
   }, [i18n])
+
+  useEffect(() => {
+    settingsApi.getAll().then(cfg => {
+      const colors: Partial<ThemeColors> = {}
+      COLOR_KEYS.forEach((key, i) => {
+        const val = cfg[SETTING_KEYS[i]]
+        if (val) colors[key] = val
+      })
+      if (Object.keys(colors).length > 0) {
+        setThemeColors(colors)
+      } else {
+        applyThemeColors(DEFAULT_COLORS)
+      }
+    }).catch(() => { applyThemeColors(DEFAULT_COLORS) })
+  }, [setThemeColors])
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-950">
