@@ -19,15 +19,7 @@ interface ColorField {
 }
 
 const COLOR_FIELDS: ColorField[] = [
-  { key: 'primary',       settingKey: 'theme_color_primary',        labelKey: 'settings.colorPrimary' },
-  { key: 'primaryDark',   settingKey: 'theme_color_primary_dark',   labelKey: 'settings.colorPrimaryDark' },
-  { key: 'bg',            settingKey: 'theme_color_bg',             labelKey: 'settings.colorBg' },
-  { key: 'surface',       settingKey: 'theme_color_surface',        labelKey: 'settings.colorSurface' },
-  { key: 'border',        settingKey: 'theme_color_border',         labelKey: 'settings.colorBorder' },
-  { key: 'textSecondary', settingKey: 'theme_color_text_secondary', labelKey: 'settings.colorTextSecondary' },
-]
-
-const PRESETS: { key: string; nameKey: string; swatches: string[]; colors: ThemeColors }[] = [
+  { key: 'primary',       settingKey: 'theme_color_primary',        labelKey: 'settings.colorPrimary' },: { key: string; nameKey: string; swatches: string[]; colors: ThemeColors }[] = [
   {
     key: 'default',
     nameKey: 'settings.presetDefault',
@@ -271,15 +263,7 @@ interface ColorField {
 }
 
 const COLOR_FIELDS: ColorField[] = [
-  { key: 'primary',       settingKey: 'theme_color_primary',            labelKey: 'settings.colorPrimary' },
-  { key: 'primaryDark',   settingKey: 'theme_color_primary_dark',       labelKey: 'settings.colorPrimaryDark' },
-  { key: 'bg',            settingKey: 'theme_color_bg',                 labelKey: 'settings.colorBg' },
-  { key: 'surface',       settingKey: 'theme_color_surface',            labelKey: 'settings.colorSurface' },
-  { key: 'border',        settingKey: 'theme_color_border',             labelKey: 'settings.colorBorder' },
-  { key: 'textSecondary', settingKey: 'theme_color_text_secondary',     labelKey: 'settings.colorTextSecondary' },
-]
-
-function isValidHex(v: string): boolean {
+  { key: 'primary',       settingKey: 'theme_color_primary',        labelKey: 'settings.colorPrimary' },(v: string): boolean {
   return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)
 }
 
