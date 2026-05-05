@@ -1,8 +1,6 @@
 import { create } from 'zustand'
 import type { ActiveZone, Sensor } from '../types'
 
-type Theme = 'dark' | 'light'
-
 export interface ThemeColors {
   primary: string
   primaryDark: string
@@ -21,14 +19,30 @@ export const DEFAULT_COLORS: ThemeColors = {
   textSecondary: '#9ca3af',
 }
 
+function hexToRgba(hex: string, alpha: number): string {
+  try {
+    const clean = hex.replace('#', '')
+    const full6 = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean
+    const r = parseInt(full6.slice(0, 2), 16)
+    const g = parseInt(full6.slice(2, 4), 16)
+    const b = parseInt(full6.slice(4, 6), 16)
+    return `rgba(${r},${g},${b},${alpha})`
+  } catch {
+    return `rgba(34,197,94,${alpha})`
+  }
+}
+
 export function applyThemeColors(colors: Partial<ThemeColors>) {
+  const full: ThemeColors = { ...DEFAULT_COLORS, ...colors }
   const root = document.documentElement
-  if (colors.primary) root.style.setProperty('--theme-primary', colors.primary)
-  if (colors.primaryDark) root.style.setProperty('--theme-primary-dark', colors.primaryDark)
-  if (colors.bg) root.style.setProperty('--theme-bg', colors.bg)
-  if (colors.surface) root.style.setProperty('--theme-surface', colors.surface)
-  if (colors.border) root.style.setProperty('--theme-border', colors.border)
-  if (colors.textSecondary) root.style.setProperty('--theme-text-secondary', colors.textSecondary)
+  root.style.setProperty('--theme-primary', full.primary)
+  root.style.setProperty('--theme-primary-dark', full.primaryDark)
+  root.style.setProperty('--theme-bg', full.bg)
+  root.style.setProperty('--theme-surface', full.surface)
+  root.style.setProperty('--theme-border', full.border)
+  root.style.setProperty('--theme-text-secondary', full.textSecondary)
+  root.style.setProperty('--theme-primary-a15', hexToRgba(full.primary, 0.15))
+  root.style.setProperty('--theme-primary-a20', hexToRgba(full.primary, 0.20))
 }
 
 interface IrrigationStore {
@@ -36,36 +50,26 @@ interface IrrigationStore {
   anyWatering: boolean
   blockingSensors: Sensor[]
   wsConnected: boolean
-  theme: Theme
   sidebarOpen: boolean
   themeColors: ThemeColors
   setActiveZones: (zones: ActiveZone[]) => void
   setBlockingSensors: (sensors: Sensor[]) => void
   setWsConnected: (v: boolean) => void
-  toggleTheme: () => void
   toggleSidebar: () => void
   closeSidebar: () => void
   setThemeColors: (colors: Partial<ThemeColors>) => void
 }
-
-const savedTheme = (localStorage.getItem('irrigation-theme') as Theme) || 'dark'
 
 export const useIrrigationStore = create<IrrigationStore>((set, get) => ({
   activeZones: [],
   anyWatering: false,
   blockingSensors: [],
   wsConnected: false,
-  theme: savedTheme,
   sidebarOpen: false,
   themeColors: { ...DEFAULT_COLORS },
   setActiveZones: (zones) => set({ activeZones: zones, anyWatering: zones.length > 0 }),
   setBlockingSensors: (sensors) => set({ blockingSensors: sensors }),
   setWsConnected: (v) => set({ wsConnected: v }),
-  toggleTheme: () => {
-    const next: Theme = get().theme === 'dark' ? 'light' : 'dark'
-    localStorage.setItem('irrigation-theme', next)
-    set({ theme: next })
-  },
   toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
   closeSidebar: () => set({ sidebarOpen: false }),
   setThemeColors: (colors) => {

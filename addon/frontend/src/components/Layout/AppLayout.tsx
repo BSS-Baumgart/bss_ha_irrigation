@@ -10,15 +10,15 @@ const COLOR_KEYS: (keyof ThemeColors)[] = ['primary', 'primaryDark', 'bg', 'surf
 const SETTING_KEYS = ['theme_color_primary', 'theme_color_primary_dark', 'theme_color_bg', 'theme_color_surface', 'theme_color_border', 'theme_color_text_secondary']
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const theme = useIrrigationStore(s => s.theme)
   const sidebarOpen = useIrrigationStore(s => s.sidebarOpen)
   const closeSidebar = useIrrigationStore(s => s.closeSidebar)
   const setThemeColors = useIrrigationStore(s => s.setThemeColors)
   const { i18n } = useTranslation()
 
+  // Always dark mode — no light/dark toggle
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-  }, [theme])
+    document.documentElement.classList.add('dark')
+  }, [])
 
   useEffect(() => {
     fetch(`${INGRESS_BASE}/api/config`)

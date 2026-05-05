@@ -26,24 +26,52 @@
   }
 }
 
-/* Theme color overrides — applied when CSS vars are set via Settings */
-.dark .btn-primary {
-  background-color: var(--theme-primary-dark);
+/* ------------------------------------------------------------------
+   Theme colour overrides — always dark UI, CSS vars set by JS.
+   Rules outside @layer outrank Tailwind's @layer utilities in the
+   CSS cascade, so !important is a belt-and-suspenders safeguard.
+   ------------------------------------------------------------------ */
+
+/* Main backgrounds */
+.dark [class*="bg-gray-950"] {
+  background-color: var(--theme-bg) !important;
 }
-.dark .btn-primary:hover {
-  background-color: var(--theme-primary);
+.dark [class*="bg-gray-900"],
+.dark .card {
+  background-color: var(--theme-surface) !important;
 }
-.dark body {
-  background-color: var(--theme-bg);
+.dark [class*="bg-gray-800"] {
+  background-color: var(--theme-surface) !important;
 }
+/* Borders */
 .dark .card,
-.dark [class*="bg-gray-900"] {
-  background-color: var(--theme-surface);
-  border-color: var(--theme-border);
-}
 .dark [class*="border-gray-800"],
 .dark [class*="border-gray-700"] {
-  border-color: var(--theme-border);
+  border-color: var(--theme-border) !important;
+}
+/* Buttons */
+.dark .btn-primary {
+  background-color: var(--theme-primary-dark) !important;
+}
+.dark .btn-primary:hover {
+  background-color: var(--theme-primary) !important;
+}
+/* Accent colours */
+.dark [class*="text-primary-4"],
+.dark [class*="text-primary-3"],
+.dark [class*="text-primary-5"] {
+  color: var(--theme-primary) !important;
+}
+.dark [class*="bg-primary-9"] {
+  background-color: var(--theme-primary-a15) !important;
+}
+.dark .badge-green {
+  background-color: var(--theme-primary-a20) !important;
+  color: var(--theme-primary) !important;
+}
+/* Active nav item bg */
+.dark a[class*="bg-primary-9"] {
+  background-color: var(--theme-primary-a15) !important;
 }
 
 @layer components {
@@ -84,16 +112,3 @@
     @apply bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-400 text-xs font-medium px-2 py-0.5 rounded-full;
   }
 }
-
-/* Light mode overrides for page-level dark gray utilities */
-html:not(.dark) .bg-gray-950 { background-color: #f3f4f6; }
-html:not(.dark) .bg-gray-900 { background-color: #ffffff; }
-html:not(.dark) .bg-gray-800 { background-color: #f3f4f6; }
-html:not(.dark) .bg-gray-700 { background-color: #e5e7eb; }
-html:not(.dark) .bg-gray-600 { background-color: #d1d5db; }
-html:not(.dark) .border-gray-800 { border-color: #e5e7eb; }
-html:not(.dark) .border-gray-700 { border-color: #d1d5db; }
-html:not(.dark) .text-gray-300 { color: #374151; }
-html:not(.dark) .text-gray-400 { color: #4b5563; }
-html:not(.dark) .text-gray-500 { color: #6b7280; }
-html:not(.dark) .text-gray-600 { color: #374151; }

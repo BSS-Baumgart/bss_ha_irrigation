@@ -216,6 +216,11 @@
     "colorSurface": "Powierzchnia (karty)",
     "colorBorder": "Obramowanie",
     "colorTextSecondary": "Tekst drugorzędny",
-    "resetColors": "Przywróć domyślne"
+    "resetColors": "Przywróć domyślne",
+    "colorPresets": "Gotowe palety",
+    "presetDefault": "Domyślna (Zielona)",
+    "presetOcean": "Ocean (Niebieska)",
+    "presetSunset": "Zachód słońca (Pomarańczowa)",
+    "presetViolet": "Fioletowa"
   }
 }

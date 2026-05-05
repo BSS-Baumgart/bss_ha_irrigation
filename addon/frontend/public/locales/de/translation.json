@@ -216,6 +216,11 @@
     "colorSurface": "Oberfläche (Karten)",
     "colorBorder": "Rahmen",
     "colorTextSecondary": "Sekundärer Text",
-    "resetColors": "Auf Standard zurücksetzen"
+    "resetColors": "Auf Standard zur\u00fccksetzen",
+    "colorPresets": "Farbpaletten",
+    "presetDefault": "Standard (Gr\u00fcn)",
+    "presetOcean": "Ozean (Blau)",
+    "presetSunset": "Sonnenuntergang (Orange)",
+    "presetViolet": "Violett"
   }
 }
